@@ -17,9 +17,22 @@ export default function RootLayout() {
     return null;
   }
 
+  // Custom lighter dark theme
+  const CustomDarkTheme = {
+    ...DarkTheme,
+    colors: {
+      ...DarkTheme.colors,
+      background: '#2D3748', // Lighter background
+      card: '#374151', // Lighter card background
+      border: '#4B5563', // Lighter border
+      text: '#F7FAFC', // Lighter text
+    },
+  };
+
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={colorScheme === 'dark' ? CustomDarkTheme : DefaultTheme}>
       <Stack>
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>

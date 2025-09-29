@@ -1,28 +1,27 @@
-import SectionsTab from '@/components/academic/SectionsTab';
-import SubjectsTab from '@/components/academic/SubjectsTab';
+import InvoicesTab from '@/components/financial/InvoicesTab';
+import PaymentsTab from '@/components/financial/PaymentsTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import React, { useState } from 'react';
 import {
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-export default function AcademicInfoScreen() {
-  const [activeTab, setActiveTab] = useState<'subjects' | 'sections'>('subjects');
+export default function FinancialScreen() {
+  const [activeTab, setActiveTab] = useState<'invoices' | 'payments'>('invoices');
   const colorScheme = useColorScheme();
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
-      <View style={{ flex: 1, backgroundColor: Colors[colorScheme ?? 'light'].background }}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={[styles.headerTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Academic Information</Text>
-        <Text style={[styles.headerSubtitle, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>Your academic details and class information</Text>
+        <Text style={[styles.headerTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Financial Information</Text>
+        <Text style={[styles.headerSubtitle, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>Your invoices and payment history</Text>
       </View>
 
       {/* Tab Switcher */}
@@ -31,32 +30,32 @@ export default function AcademicInfoScreen() {
         borderColor: Colors[colorScheme ?? 'light'].cardBorder 
       }]}>
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'subjects' && styles.activeTab]}
-          onPress={() => setActiveTab('subjects')}
+          style={[styles.tab, activeTab === 'invoices' && styles.activeTab]}
+          onPress={() => setActiveTab('invoices')}
         >
           <View style={styles.tabContent}>
             <IconSymbol 
-              name="book.fill" 
+              name="doc.text.fill" 
               size={18} 
-              color={activeTab === 'subjects' ? '#FFFFFF' : '#199BCF'} 
+              color={activeTab === 'invoices' ? '#FFFFFF' : '#199BCF'} 
             />
-            <Text style={[styles.tabText, activeTab === 'subjects' && styles.activeTabText]}>
-              Subjects
+            <Text style={[styles.tabText, activeTab === 'invoices' && styles.activeTabText]}>
+              Invoices
             </Text>
           </View>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'sections' && styles.activeTab]}
-          onPress={() => setActiveTab('sections')}
+          style={[styles.tab, activeTab === 'payments' && styles.activeTab]}
+          onPress={() => setActiveTab('payments')}
         >
           <View style={styles.tabContent}>
             <IconSymbol 
-              name="person.2.fill" 
+              name="creditcard.fill" 
               size={18} 
-              color={activeTab === 'sections' ? '#FFFFFF' : '#199BCF'} 
+              color={activeTab === 'payments' ? '#FFFFFF' : '#199BCF'} 
             />
-            <Text style={[styles.tabText, activeTab === 'sections' && styles.activeTabText]}>
-              Sections
+            <Text style={[styles.tabText, activeTab === 'payments' && styles.activeTabText]}>
+              Payments
             </Text>
           </View>
         </TouchableOpacity>
@@ -64,12 +63,11 @@ export default function AcademicInfoScreen() {
 
       {/* Content */}
       <View style={styles.content}>
-        {activeTab === 'subjects' ? (
-          <SubjectsTab />
+        {activeTab === 'invoices' ? (
+          <InvoicesTab />
         ) : (
-          <SectionsTab />
+          <PaymentsTab />
         )}
-      </View>
       </View>
     </SafeAreaView>
   );
