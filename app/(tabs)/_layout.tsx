@@ -3,16 +3,19 @@ import React from 'react';
 import { Platform } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
+import { NotificationTabIcon } from '@/components/NotificationTabIcon';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
+import { NotificationProvider } from '@/contexts/NotificationContext';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
 
   return (
-    <Tabs
+    <NotificationProvider>
+      <Tabs
       screenOptions={{
         tabBarActiveTintColor: '#199BCF', // Direct color match with confirm enrollment button
         tabBarInactiveTintColor: Colors[colorScheme ?? 'light'].tabIconDefault,
@@ -82,7 +85,7 @@ export default function TabLayout() {
         name="notifications"
         options={{
           title: 'Updates',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="bell.fill" color={color} />,
+          tabBarIcon: ({ color }) => <NotificationTabIcon color={color} size={28} />,
         }}
       />
       <Tabs.Screen
@@ -93,5 +96,6 @@ export default function TabLayout() {
         }}
       />
     </Tabs>
+    </NotificationProvider>
   );
 }

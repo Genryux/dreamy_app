@@ -94,6 +94,27 @@ export interface Payment {
   status: string;
 }
 
+export interface Notification {
+  id: string;
+  type: string;
+  data: {
+    title: string;
+    message: string;
+    url?: string;
+    shared_id?: string; // For matching with real-time notifications
+  };
+  read_at: string | null;
+  created_at: string;
+}
+
+export interface NotificationResponse {
+  notifications: Notification[];
+  unread_count: number;
+  total: number;
+  current_page: number;
+  last_page: number;
+}
+
 // API Service Class
 class ApiService {
   private async getAuthToken(): Promise<string | null> {
@@ -349,6 +370,31 @@ class ApiService {
       body: JSON.stringify(personalInfo),
     });
     return data;
+  }
+
+  // Notification methods
+  async getNotifications(page: number = 1): Promise<NotificationResponse> {
+    const data = await this.makeRequest(`/notifications?page=${page}`);
+    return data.data;
+  }
+
+  async markNotificationAsRead(id: string): Promise<{ success: boolean; unread_count: number }> {
+    const data = await this.makeRequest(`/notifications/${id}/read`, {
+      method: 'POST',
+    });
+    return data;
+  }
+
+  async markAllNotificationsAsRead(): Promise<{ success: boolean; unread_count: number }> {
+    const data = await this.makeRequest('/notifications/mark-all-read', {
+      method: 'POST',
+    });
+    return data;
+  }
+
+  async getUnreadNotificationCount(): Promise<{ unread_count: number }> {
+    const data = await this.makeRequest('/notifications/unread-count');
+    return data.data;
   }
 }
 
