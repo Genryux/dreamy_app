@@ -1,6 +1,7 @@
 import { NOTIFICATION_CONFIG } from '@/config/notifications';
 import * as SecureStore from 'expo-secure-store';
 import Pusher from 'pusher-js/react-native';
+import { apiService } from './api';
 
 export interface NotificationData {
   id: string;
@@ -19,9 +20,11 @@ type NotificationHandler = (notification: NotificationData) => void;
 
 class NotificationService {
   private pusher: Pusher | null = null;
-  private channel: any = null;
+  private publicChannel: any = null; // Public students channel
+  private privateChannel: any = null; // Private user channel
   private isConnected: boolean = false;
   private notificationHandlers: NotificationHandler[] = [];
+  private currentUserId: number | null = null;
 
   /**
    * Initialize the Laravel Reverb connection for real-time notifications
@@ -53,8 +56,25 @@ class NotificationService {
         },
       });
 
-      // Subscribe to students channel
-      this.channel = this.pusher.subscribe(NOTIFICATION_CONFIG.CHANNELS.STUDENTS);
+      // Get current user ID for private channel
+      this.currentUserId = await this.getCurrentUserId();
+      console.log(`🔍 Current user ID retrieved: ${this.currentUserId}`);
+
+      // Subscribe to public students channel
+      this.publicChannel = this.pusher.subscribe(NOTIFICATION_CONFIG.CHANNELS.STUDENTS);
+      console.log(`📱 Subscribed to public channel: ${NOTIFICATION_CONFIG.CHANNELS.STUDENTS}`);
+
+      // Subscribe to private user channel if user ID is available
+      if (this.currentUserId) {
+        const privateChannelName = `${NOTIFICATION_CONFIG.CHANNELS.PRIVATE_USER}${this.currentUserId}`;
+        console.log(`📱 Attempting to subscribe to private channel: ${privateChannelName}`);
+        this.privateChannel = this.pusher.subscribe(privateChannelName);
+        
+        // Set up private channel listeners
+        this.setupPrivateChannelListeners();
+      } else {
+        console.log('⚠️ No user ID available, skipping private channel subscription');
+      }
 
       // Listen for connection events
       this.pusher.connection.bind('connected', () => {
@@ -72,32 +92,33 @@ class NotificationService {
         this.isConnected = false;
       });
 
-      // Listen for notification events
-      this.channel.bind(NOTIFICATION_CONFIG.EVENTS.NOTIFICATION_CREATED, 
+      // Listen for notification events on PUBLIC channel
+      this.publicChannel.bind(NOTIFICATION_CONFIG.EVENTS.NOTIFICATION_CREATED, 
         (data: any) => {
-          console.log('📱 New notification received via WebSocket:', data);
+          console.log('📱 Public notification received via WebSocket:', data);
           this.handleNotification(data);
         }
       );
 
-      // Also listen for the generic event name that might be used
-      this.channel.bind('notification', (data: any) => {
-        console.log('📱 Generic notification received:', data);
+      this.publicChannel.bind('notification', (data: any) => {
+        console.log('📱 Generic public notification received:', data);
         this.handleNotification(data);
       });
 
-      // Channel subscription events
-      this.channel.bind('pusher:subscription_succeeded', () => {
-        console.log('✅ Successfully subscribed to students channel');
+      // Public channel subscription events
+      this.publicChannel.bind('pusher:subscription_succeeded', () => {
+        console.log('✅ Successfully subscribed to public students channel');
       });
 
-      this.channel.bind('pusher:subscription_error', (error: any) => {
-        console.error('❌ Failed to subscribe to students channel:', error);
+      this.publicChannel.bind('pusher:subscription_error', (error: any) => {
+        console.error('❌ Failed to subscribe to public students channel:', error);
       });
 
-      // Debug: Log all events on this channel
-      this.channel.bind_global((eventName: string, data: any) => {
-        console.log(`🔍 Channel event received: ${eventName}`, data);
+      // Private channel listeners are set up in setupPrivateChannelListeners() method
+
+      // Debug: Log all events on public channel
+      this.publicChannel.bind_global((eventName: string, data: any) => {
+        console.log(`🔍 Public channel event received: ${eventName}`, data);
       });
 
     } catch (error) {
@@ -160,12 +181,46 @@ class NotificationService {
   }
 
   /**
+   * Get current user ID from API
+   */
+  private async getCurrentUserId(): Promise<number | null> {
+    try {
+      // Check if we have an auth token first
+      const token = await SecureStore.getItemAsync('authToken');
+      if (!token) {
+        console.log('⚠️ No auth token found, cannot get user ID for private channel');
+        return null;
+      }
+
+      // Use the existing API service to get current user
+      const userData = await apiService.getCurrentUser();
+      
+      if (userData && userData.id) {
+        console.log(`✅ Retrieved user ID for private channel: ${userData.id}`);
+        return userData.id;
+      } else {
+        console.log('⚠️ User data retrieved but no ID found');
+        return null;
+      }
+    } catch (error) {
+      console.error('❌ Failed to get current user ID:', error);
+      // Don't throw error - just return null so public channel still works
+      return null;
+    }
+  }
+
+  /**
    * Disconnect from Reverb
    */
   disconnect(): void {
-    if (this.channel) {
-      this.channel.unbind_all();
+    if (this.publicChannel) {
+      this.publicChannel.unbind_all();
       this.pusher?.unsubscribe(NOTIFICATION_CONFIG.CHANNELS.STUDENTS);
+    }
+    
+    if (this.privateChannel && this.currentUserId) {
+      this.privateChannel.unbind_all();
+      this.pusher?.unsubscribe(`${NOTIFICATION_CONFIG.CHANNELS.PRIVATE_USER}${this.currentUserId}`);
     }
     
     if (this.pusher) {
@@ -174,6 +229,7 @@ class NotificationService {
     
     this.isConnected = false;
     this.notificationHandlers = [];
+    this.currentUserId = null;
     console.log('🔌 Notification service disconnected');
   }
 
@@ -182,6 +238,72 @@ class NotificationService {
    */
   getConnectionStatus(): boolean {
     return this.isConnected;
+  }
+
+  /**
+   * Update user ID and reconnect to private channel
+   * Call this when user logs in or user data changes
+   */
+  async updateUserId(userId: number | null): Promise<void> {
+    // If user ID hasn't changed, no need to reconnect
+    if (this.currentUserId === userId) {
+      return;
+    }
+
+    console.log(`🔄 Updating user ID from ${this.currentUserId} to ${userId}`);
+
+    // Disconnect old private channel if exists
+    if (this.privateChannel && this.currentUserId) {
+      this.privateChannel.unbind_all();
+      this.pusher?.unsubscribe(`${NOTIFICATION_CONFIG.CHANNELS.PRIVATE_USER}${this.currentUserId}`);
+      this.privateChannel = null;
+    }
+
+    // Update user ID
+    this.currentUserId = userId;
+
+    // Subscribe to new private channel if user ID is available and pusher is connected
+    if (this.pusher && this.currentUserId && this.isConnected) {
+      const privateChannelName = `${NOTIFICATION_CONFIG.CHANNELS.PRIVATE_USER}${this.currentUserId}`;
+      this.privateChannel = this.pusher.subscribe(privateChannelName);
+      console.log(`📱 Subscribing to new private channel: ${privateChannelName}`);
+
+      // Set up event listeners for the new private channel
+      this.setupPrivateChannelListeners();
+    }
+  }
+
+  /**
+   * Set up event listeners for private channel
+   */
+  private setupPrivateChannelListeners(): void {
+    if (!this.privateChannel) return;
+
+    this.privateChannel.bind(NOTIFICATION_CONFIG.EVENTS.NOTIFICATION_CREATED, 
+      (data: any) => {
+        console.log('📱 Private notification received via WebSocket:', data);
+        this.handleNotification(data);
+      }
+    );
+
+    this.privateChannel.bind('notification', (data: any) => {
+      console.log('📱 Generic private notification received:', data);
+      this.handleNotification(data);
+    });
+
+    // Private channel subscription events
+    this.privateChannel.bind('pusher:subscription_succeeded', () => {
+      console.log('✅ Successfully subscribed to private user channel');
+    });
+
+    this.privateChannel.bind('pusher:subscription_error', (error: any) => {
+      console.error('❌ Failed to subscribe to private user channel:', error);
+    });
+
+    // Debug: Log all events on private channel
+    this.privateChannel.bind_global((eventName: string, data: any) => {
+      console.log(`🔍 Private channel event received: ${eventName}`, data);
+    });
   }
 
   /**

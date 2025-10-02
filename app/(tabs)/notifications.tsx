@@ -31,6 +31,12 @@ export default function NotificationsScreen() {
     hasMore
   } = useNotifications();
 
+  // DEBUG: Log what the screen is receiving
+  React.useEffect(() => {
+    console.log('🔍 NotificationsScreen - notifications array length:', notifications.length);
+    console.log('🔍 NotificationsScreen - notifications array:', notifications.map(n => ({ id: n.id, title: n.data?.title, type: n.type })));
+  }, [notifications]);
+
   const handleNotificationPress = useCallback((notification: Notification) => {
     if (!notification.read_at) {
       markAsRead(notification.id);
@@ -179,7 +185,7 @@ export default function NotificationsScreen() {
           <FlatList
             data={notifications}
             renderItem={renderNotification}
-            keyExtractor={(item) => item.id}
+            keyExtractor={(item, index) => `${item.id}-${index}`}
             ListEmptyComponent={renderEmpty}
             ListFooterComponent={renderFooter}
             refreshControl={

@@ -13,7 +13,8 @@ export const NOTIFICATION_CONFIG = {
   
   // Channel Names (Should match your Laravel broadcasting channels)
   CHANNELS: {
-    STUDENTS: 'students',
+    STUDENTS: 'students', // Public channel for all students
+    PRIVATE_USER: 'user.', // User-specific channel prefix (will append user ID)
   },
   
   // Event Names (Should match your Laravel notification events)

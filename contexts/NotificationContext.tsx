@@ -13,6 +13,7 @@ interface NotificationContextType {
   markAllAsRead: () => Promise<void>;
   loadMore: () => Promise<void>;
   hasMore: boolean;
+  updateUserId: (userId: number | null) => Promise<void>;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -36,6 +37,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
   // Handle real-time notifications
   const handleRealtimeNotification = (notificationData: NotificationData) => {
     console.log('📱 New notification received in real-time');
+    console.log('📱 Real-time notification data:', JSON.stringify(notificationData, null, 2));
     
     // Convert to our notification format
     const newNotification: Notification = {
@@ -46,16 +48,31 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
       created_at: notificationData.created_at,
     };
 
+    console.log('📱 Converted notification:', JSON.stringify(newNotification, null, 2));
+
     // Add to the beginning of the list, but check for duplicates first
     setNotifications(prev => {
-      // Check if notification already exists
-      const exists = prev.some(n => n.id === newNotification.id);
-      if (exists) {
-        console.log(`⚠️ Notification ${newNotification.id} already exists, skipping duplicate`);
+      console.log('📱 Current notifications before adding:', prev.length);
+      
+      // Check if notification already exists by ID or shared_id
+      const existsById = prev.some(n => n.id === newNotification.id);
+      const existsBySharedId = newNotification.data.shared_id && 
+        prev.some(n => n.data?.shared_id === newNotification.data.shared_id);
+      
+      if (existsById) {
+        console.log(`⚠️ Notification ${newNotification.id} already exists by ID, skipping duplicate`);
         return prev;
       }
+      
+      if (existsBySharedId) {
+        console.log(`⚠️ Notification with shared_id ${newNotification.data.shared_id} already exists, skipping duplicate`);
+        return prev;
+      }
+      
       // Add new notification to the beginning
-      return [newNotification, ...prev];
+      const updated = [newNotification, ...prev];
+      console.log('📱 Notifications after adding:', updated.length);
+      return updated;
     });
     
     // Increment unread count if notification is unread and doesn't already exist
@@ -101,34 +118,25 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
       setIsLoading(true);
       const response = await apiService.getNotifications(1);
       
-      // Get all shared_ids from queued notifications
-      const queuedSharedIds = new Set(
-        response.notifications
-          .filter(n => n.type === 'App\\Notifications\\QueuedNotification' && n.data?.shared_id)
-          .map(n => n.data.shared_id)
-      );
+      // DEBUG: Log the raw API response
+      console.log('🔍 RAW API Response:', JSON.stringify(response, null, 2));
+      console.log('🔍 Number of notifications from API:', response.notifications.length);
       
-      // Filter out immediate notifications that have a corresponding queued notification
-      // and apply read state to immediate notifications that were marked as read locally
-      const updatedNotifications = response.notifications
-        .filter(notification => {
-          // Remove immediate notifications if their queued version exists
-          if (notification.type === 'App\\Notifications\\ImmediateNotification' && 
-              notification.data?.shared_id && 
-              queuedSharedIds.has(notification.data.shared_id)) {
-            console.log(`🗑️ Removing immediate notification ${notification.id} - queued version exists`);
-            return false;
-          }
-          return true;
-        })
-        .map(notification => {
-          // Apply read state to immediate notifications marked locally
-          if (notification.type === 'App\\Notifications\\ImmediateNotification' && 
-              readImmediateNotifications.has(notification.id)) {
-            return { ...notification, read_at: new Date().toISOString() };
-          }
-          return notification;
-        });
+      // TEMPORARY FIX: Don't filter anything - show all notifications from API
+      // This will help us see what's actually being returned
+      const updatedNotifications = response.notifications.map(notification => {
+        console.log(`📋 Processing notification: ${notification.type} - ID: ${notification.id} - Title: ${notification.data?.title}`);
+        
+        // Apply read state to immediate notifications marked locally
+        if (notification.type === 'App\\Notifications\\ImmediateNotification' && 
+            readImmediateNotifications.has(notification.id)) {
+          return { ...notification, read_at: new Date().toISOString() };
+        }
+        return notification;
+      });
+      
+      console.log('🔍 Final notifications to display:', updatedNotifications.length);
+      console.log('🔍 Sample notification structure:', JSON.stringify(updatedNotifications[0], null, 2));
       
       setNotifications(updatedNotifications);
       setUnreadCount(response.unread_count);
@@ -136,6 +144,11 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
       setHasMore(response.current_page < response.last_page);
       
       console.log(`📋 Loaded ${response.notifications.length} notifications, ${response.unread_count} unread`);
+      
+      // DEBUG: Check state after setting
+      setTimeout(() => {
+        console.log('🔍 State after setNotifications - length:', updatedNotifications.length);
+      }, 100);
     } catch (error) {
       console.error('❌ Failed to refresh notifications:', error);
     } finally {
@@ -340,6 +353,16 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     }
   };
 
+  // Update user ID for private channel subscription
+  const updateUserId = async (userId: number | null) => {
+    try {
+      await notificationService.updateUserId(userId);
+      console.log(`✅ Updated notification service user ID to: ${userId}`);
+    } catch (error) {
+      console.error('❌ Failed to update notification service user ID:', error);
+    }
+  };
+
   const value: NotificationContextType = {
     notifications,
     unreadCount,
@@ -351,6 +374,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     markAllAsRead,
     loadMore,
     hasMore,
+    updateUserId,
   };
 
   return (
