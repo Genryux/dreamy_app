@@ -396,6 +396,27 @@ class ApiService {
     const data = await this.makeRequest('/notifications/unread-count');
     return data.data;
   }
+
+  // Payment Plan Selection
+  async calculatePaymentPlan(planData: {
+    total_amount: number;
+    down_payment: number;
+    installment_months?: number;
+  }): Promise<any> {
+    const data = await this.makeRequest('/financial/payment-plan/calculate', {
+      method: 'POST',
+      body: JSON.stringify(planData),
+    });
+    return data;
+  }
+
+  async selectPaymentPlan(invoiceId: number, paymentMode: 'installment' | 'full'): Promise<any> {
+    const data = await this.makeRequest(`/financial/invoice/${invoiceId}/payment-plan/select`, {
+      method: 'POST',
+      body: JSON.stringify({ payment_mode: paymentMode }),
+    });
+    return data;
+  }
 }
 
 // Export singleton instance
