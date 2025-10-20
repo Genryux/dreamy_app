@@ -131,18 +131,16 @@ export default function InvoicesTab({ invoices = [], loading = false }: Invoices
     }
   };
 
-  const handleMonthlyInstallmentClick = async (invoice: Invoice) => {
-    setSelectedInvoice(invoice);
-    // Fixed down payment for now (admin configurable later)
-    const downPayment = 4500; // TODO: Get from admin settings
-    
-    try {
-      // Calculate payment plan preview using apiService
-      const data = await apiService.calculatePaymentPlan({
-        total_amount: invoice.total_amount,
-        down_payment: downPayment,
-        installment_months: 9,
-      });
+    const handleMonthlyInstallmentClick = async (invoice: Invoice) => {
+      setSelectedInvoice(invoice);
+      
+      try {
+        // Calculate payment plan preview using apiService
+        // Down payment will be fetched from SchoolSettings by the API
+        const data = await apiService.calculatePaymentPlan({
+          total_amount: invoice.total_amount,
+          installment_months: 9,
+        });
       
       setPaymentPlanPreview(data);
       setShowPaymentPlanModal(true);
@@ -263,7 +261,6 @@ export default function InvoicesTab({ invoices = [], loading = false }: Invoices
           </View>
         )}
 
-        {/* Payment Plan Selection Buttons (only for unpaid invoices without a plan) */}
         {(invoice.payment_status === 'unpaid' && !invoice.has_payment_plan && invoice.balance > 0 && (invoice.payment_mode === 'flexible' || !invoice.payment_mode)) && (
           <View style={[styles.paymentPlanSection, { borderTopColor: Colors[colorScheme ?? 'light'].cardBorder }]}>
             <Text style={[styles.paymentPlanTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Choose Payment Option:</Text>
@@ -304,8 +301,8 @@ export default function InvoicesTab({ invoices = [], loading = false }: Invoices
         )}
       </View>
 
-      {/* Payment Plan Container (separate from invoice) */}
-      {(invoice.has_payment_plan && invoice.payment_plan) && (
+      {/* Payment Plan Container - FIXED CONDITION */}
+      {((invoice.has_payment_plan === true || invoice.has_payment_plan === 1) && invoice.payment_plan && invoice.payment_plan.id) && (
         <View style={[styles.paymentPlanCard, { 
           backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
           borderColor: Colors[colorScheme ?? 'light'].cardBorder 
@@ -313,128 +310,105 @@ export default function InvoicesTab({ invoices = [], loading = false }: Invoices
           <View style={styles.planHeader}>
             <IconSymbol name="calendar" size={18} color="#199BCF" />
             <Text style={[styles.planHeaderText, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>
-              {invoice.payment_mode === 'installment' ? 'Monthly Installment Plan' : invoice.payment_mode === 'full' ? 'One-Time Payment' : 'Payment Plan'}
+              {(() => {
+                const mode = String(invoice.payment_mode || '');
+                if (mode === 'installment') return 'Monthly Installment Plan';
+                if (mode === 'full') return 'One-Time Payment';
+                return 'Payment Plan';
+              })()}
             </Text>
           </View>
           
-          {invoice.payment_mode === 'installment' && (
+          {String(invoice.payment_mode || '') === 'installment' && (
             <>
-              {/* Current/Next Due Payment Highlight */}
-              {(() => {
-                const schedules = invoice.payment_plan.schedules || [];
-                // Prioritize overdue payments, then pending/partial
-                const currentDue = schedules.find(s => s.status === 'overdue') || 
-                                 schedules.find(s => s.status === 'pending' || s.status === 'partial');
-                
-                if (currentDue) {
-                  return (
-                    <View style={[styles.currentDueCard, { 
-                      backgroundColor: Colors[colorScheme ?? 'light'].sectionBackground,
-                      borderColor: currentDue.status === 'overdue' ? '#EF4444' : '#199BCF',
+              {/* Payment Summary - SAFE VERSION */}
+              {(invoice.payment_plan?.down_payment_amount !== null || invoice.payment_plan?.monthly_amount !== null) && (
+                <View style={styles.planSummary}>
+                  {invoice.payment_plan?.down_payment_amount !== null && (
+                    <View style={[styles.planSummaryItem, {
+                      backgroundColor: '#F8FAFC',
+                      borderColor: '#199BCF',
                       borderWidth: 1,
                     }]}>
-                      <View style={styles.currentDueHeader}>
-                        <Text style={[styles.currentDueTitle, { 
-                          color: currentDue.status === 'overdue' ? '#EF4444' : '#199BCF' 
-                        }]}>
-                          {currentDue.installment_number === 0 ? 'Down Payment Due' : 
-                           currentDue.status === 'overdue' ? 'Overdue Payment' : 'Current Month Payment'}
-                        </Text>
-                      </View>
-                      <View style={styles.currentDueBody}>
-                        <View>
-                          <Text style={[styles.currentDueLabel, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>
-                            {currentDue.description}
-                          </Text>
-                          {currentDue.due_date && (
-                            <Text style={[styles.currentDueDateText, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>
-                              Due: {currentDue.due_date}
-                            </Text>
-                          )}
-                        </View>
-                        <Text style={[styles.currentDueAmount, { 
-                          color: currentDue.status === 'overdue' ? '#EF4444' : '#199BCF' 
-                        }]}>
-                          ₱{Number(currentDue.amount_due || 0).toLocaleString()}
-                        </Text>
-                      </View>
-                      {currentDue.amount_paid > 0 && (
-                        <Text style={styles.currentDuePaid}>
-                          Paid: ₱{Number(currentDue.amount_paid).toLocaleString()}
-                        </Text>
-                      )}
+                      <Text style={[styles.planLabel, { color: '#374151' }]}>Down Payment</Text>
+                      <Text style={[styles.planValue, { color: '#199BCF' }]}>
+                        ₱{(() => {
+                          const amount = Number(invoice.payment_plan?.down_payment_amount || 0);
+                          return isNaN(amount) ? '0' : amount.toLocaleString();
+                        })()}
+                      </Text>
                     </View>
-                  );
-                }
-                return null;
-              })()}
-
-              {/* Payment Summary */}
-              <View style={styles.planSummary}>
-                <View style={[styles.planSummaryItem, {
-                  backgroundColor: '#F8FAFC',
-                  borderColor: '#199BCF',
-                  borderWidth: 1,
-                }]}>
-                  <Text style={[styles.planLabel, { color: '#374151' }]}>Down Payment</Text>
-                  <Text style={[styles.planValue, { color: '#199BCF' }]}>
-                    ₱{Number(invoice.payment_plan.down_payment_amount || 0).toLocaleString()}
-                  </Text>
+                  )}
+                  {invoice.payment_plan?.monthly_amount !== null && (
+                    <View style={[styles.planSummaryItem, {
+                      backgroundColor: '#F8FAFC',
+                      borderColor: '#199BCF',
+                      borderWidth: 1,
+                    }]}>
+                      <Text style={[styles.planLabel, { color: '#374151' }]}>Monthly Amount</Text>
+                      <Text style={[styles.planValue, { color: '#199BCF' }]}>
+                        ₱{(() => {
+                          const amount = Number(invoice.payment_plan?.monthly_amount || 0);
+                          return isNaN(amount) ? '0' : amount.toLocaleString();
+                        })()}
+                      </Text>
+                    </View>
+                  )}
                 </View>
-                <View style={[styles.planSummaryItem, {
-                  backgroundColor: '#F8FAFC',
-                  borderColor: '#199BCF',
-                  borderWidth: 1,
-                }]}>
-                  <Text style={[styles.planLabel, { color: '#374151' }]}>Monthly Amount</Text>
-                  <Text style={[styles.planValue, { color: '#199BCF' }]}>
-                    ₱{Number(invoice.payment_plan.monthly_amount || 0).toLocaleString()}
-                  </Text>
-                </View>
-              </View>
+              )}
               
-              {/* Upcoming Payments Section */}
-              {invoice.payment_plan.schedules && invoice.payment_plan.schedules.length > 0 && (
+              {/* Upcoming Payments Section - SAFE VERSION */}
+              {invoice.payment_plan?.schedules && Array.isArray(invoice.payment_plan.schedules) && invoice.payment_plan.schedules.length > 0 && (
                 <View style={styles.upcomingPaymentsSection}>
                   <Text style={[styles.upcomingTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>
                     Payment Schedule
                   </Text>
                   
                   <View style={styles.scheduleList}>
-                    {invoice.payment_plan.schedules.map((schedule) => (
-                      <View key={schedule.installment_number} style={[styles.scheduleItem, { borderBottomColor: Colors[colorScheme ?? 'light'].cardBorder }]}>
-                        <View style={styles.scheduleLeft}>
-                          <Text style={[styles.scheduleDescription, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>
-                            {schedule.description || 'Payment'}
-                          </Text>
-                          <View style={styles.scheduleDetailsRow}>
-                            <Text style={[styles.scheduleAmount, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>
-                              ₱{Number(schedule.amount_due || 0).toLocaleString()}
+                    {invoice.payment_plan.schedules.map((schedule, index) => {
+                      // Ultra-safe extraction with comprehensive fallbacks
+                      const installmentNumber = Number(schedule?.installment_number) || index || 0;
+                      const description = String(schedule?.description || 'Payment');
+                      const amountDue = Number(schedule?.amount_due) || 0;
+                      const amountPaid = Number(schedule?.amount_paid) || 0;
+                      const dueDate = schedule?.due_date ? String(schedule.due_date) : null;
+                      const status = String(schedule?.status || 'pending');
+                      
+                      return (
+                        <View key={installmentNumber} style={[styles.scheduleItem, { borderBottomColor: Colors[colorScheme ?? 'light'].cardBorder }]}>
+                          <View style={styles.scheduleLeft}>
+                            <Text style={[styles.scheduleDescription, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>
+                              {description}
                             </Text>
-                            {schedule.due_date && (
-                              <>
-                                <Text style={[styles.scheduleSeparator, { color: Colors[colorScheme ?? 'light'].textSecondary }]}> • </Text>
-                                <Text style={[styles.scheduleDueDate, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>
-                                  {schedule.due_date}
-                                </Text>
-                              </>
+                            <View style={styles.scheduleDetailsRow}>
+                              <Text style={[styles.scheduleAmount, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>
+                                ₱{isNaN(amountDue) ? '0' : amountDue.toLocaleString()}
+                              </Text>
+                              {dueDate && (
+                                <>
+                                  <Text style={[styles.scheduleSeparator, { color: Colors[colorScheme ?? 'light'].textSecondary }]}> • </Text>
+                                  <Text style={[styles.scheduleDueDate, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>
+                                    {dueDate}
+                                  </Text>
+                                </>
+                              )}
+                            </View>
+                            {amountPaid > 0 && (
+                              <Text style={styles.schedulePaidAmount}>
+                                Paid: ₱{isNaN(amountPaid) ? '0' : amountPaid.toLocaleString()}
+                              </Text>
                             )}
                           </View>
-                          {schedule.amount_paid > 0 && (
-                            <Text style={styles.schedulePaidAmount}>
-                              Paid: ₱{Number(schedule.amount_paid).toLocaleString()}
-                            </Text>
-                          )}
+                          <View style={[styles.scheduleStatus, { 
+                            backgroundColor: status === 'paid' ? '#10B981' : 
+                                           status === 'partial' ? '#F59E0B' : 
+                                           status === 'overdue' ? '#EF4444' : '#6B7280' 
+                          }]}>
+                            <Text style={styles.scheduleStatusText}>{status}</Text>
+                          </View>
                         </View>
-                        <View style={[styles.scheduleStatus, { 
-                          backgroundColor: schedule.status === 'paid' ? '#10B981' : 
-                                         schedule.status === 'partial' ? '#F59E0B' : 
-                                         schedule.status === 'overdue' ? '#EF4444' : '#6B7280' 
-                        }]}>
-                          <Text style={styles.scheduleStatusText}>{schedule.status || 'pending'}</Text>
-                        </View>
-                      </View>
-                    ))}
+                      );
+                    })}
                   </View>
                 </View>
               )}
@@ -527,7 +501,7 @@ export default function InvoicesTab({ invoices = [], loading = false }: Invoices
         <View style={styles.summaryGrid}>
           <View style={styles.summaryItem}>
             <Text style={[styles.summaryLabel, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>Total Invoices</Text>
-            <Text style={[styles.summaryValue, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>{summary.total_invoices}</Text>
+            <Text style={[styles.summaryValue, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>{summary.total_invoices.toString()}</Text>
           </View>
           <View style={styles.summaryItem}>
             <Text style={[styles.summaryLabel, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>Total Amount</Text>
@@ -562,12 +536,12 @@ export default function InvoicesTab({ invoices = [], loading = false }: Invoices
                 <Text style={styles.termSelectorText}>
                   {getCurrentTermName()}
                 </Text>
-                <Text style={styles.termSelectorIcon}>▼</Text>
+                <IconSymbol name="chevron.down" size={12} color="#6B7280" />
               </TouchableOpacity>
             </View>
           )}
         </View>
-        <Text style={[styles.invoicesSubtitle, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>{displayInvoices.length} invoices found</Text>
+        <Text style={[styles.invoicesSubtitle, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>{displayInvoices.length.toString()} invoices found</Text>
       </View>
 
       {displayInvoices.length > 0 ? (
@@ -634,7 +608,6 @@ export default function InvoicesTab({ invoices = [], loading = false }: Invoices
                   </View>
 
                   {/* Warning Message */}
-                  {console.log('Rendering warning message in payment plan preview')}
                   <View style={[styles.warningContainer, { backgroundColor: '#E3F2FD', borderColor: '#2196F3' }]}>
                     <View style={styles.warningContent}>
                       <Text style={styles.warningText}>
@@ -651,11 +624,11 @@ export default function InvoicesTab({ invoices = [], loading = false }: Invoices
                     <View key={index} style={[styles.scheduleItemBreakdown, { borderBottomColor: Colors[colorScheme ?? 'light'].cardBorder }]}>
                       <View style={styles.scheduleItemLeft}>
                         <Text style={[styles.scheduleItemDescription, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>
-                          {item.description || 'Payment'}
+                          {String(item.description || 'Payment')}
                         </Text>
                         {item.due_date && (
                           <Text style={[styles.scheduleItemDate, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>
-                            Due: {item.due_date}
+                            Due: {String(item.due_date)}
                           </Text>
                         )}
                       </View>
@@ -891,10 +864,6 @@ const styles = StyleSheet.create({
     color: '#1A3165',
     fontWeight: '600',
     marginRight: 4,
-  },
-  termSelectorIcon: {
-    fontSize: 10,
-    color: '#6B7280',
   },
   invoicesSubtitle: {
     fontSize: 14,

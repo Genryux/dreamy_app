@@ -195,7 +195,7 @@ export default function PaymentsTab({ payments = [], loading = false }: Payments
         <View style={styles.summaryGrid}>
           <View style={styles.summaryItem}>
             <Text style={[styles.summaryLabel, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>Total Payments</Text>
-            <Text style={[styles.summaryValue, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>{summary.total_payments}</Text>
+            <Text style={[styles.summaryValue, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>{summary.total_payments.toString()}</Text>
           </View>
           <View style={styles.summaryItem}>
             <Text style={[styles.summaryLabel, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>Total Amount</Text>
@@ -230,12 +230,12 @@ export default function PaymentsTab({ payments = [], loading = false }: Payments
                 <Text style={styles.termSelectorText}>
                   {getCurrentTermName()}
                 </Text>
-                <Text style={styles.termSelectorIcon}>▼</Text>
+                <IconSymbol name="chevron.down" size={12} color="#6B7280" />
               </TouchableOpacity>
             </View>
           )}
         </View>
-        <Text style={[styles.paymentsSubtitle, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>{displayPayments.length} payments found</Text>
+        <Text style={[styles.paymentsSubtitle, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>{displayPayments.length.toString()} payments found</Text>
       </View>
 
       {displayPayments.length > 0 ? (
@@ -452,10 +452,6 @@ const styles = StyleSheet.create({
     color: '#1A3165',
     fontWeight: '600',
     marginRight: 4,
-  },
-  termSelectorIcon: {
-    fontSize: 10,
-    color: '#6B7280',
   },
   paymentsSubtitle: {
     fontSize: 14,
