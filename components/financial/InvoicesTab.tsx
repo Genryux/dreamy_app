@@ -63,7 +63,7 @@ export default function InvoicesTab({ invoices = [], loading = false }: Invoices
   const [isCreatingPlan, setIsCreatingPlan] = useState(false);
   const [isSettingOneTime, setIsSettingOneTime] = useState(false);
   const { data: apiData, loading: apiLoading, error, refresh } = useInvoicesData(selectedTermId);
-  const { data: availableTerms, loading: termsLoading } = useAvailableTerms();
+  const { data: availableTerms, loading: termsLoading, error: termsError } = useAvailableTerms();
   const colorScheme = useColorScheme();
 
   // Helper function to format numbers consistently
@@ -585,7 +585,7 @@ export default function InvoicesTab({ invoices = [], loading = false }: Invoices
               </TouchableOpacity>
             </View>
             
-            <ScrollView style={styles.modalBody}>
+            <ScrollView style={styles.paymentPlanModalBody}>
               {paymentPlanPreview && paymentPlanPreview.plan && (
                 <View style={styles.planBreakdown}>
                   <Text style={[styles.breakdownTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>
@@ -733,16 +733,16 @@ export default function InvoicesTab({ invoices = [], loading = false }: Invoices
                       ]}>
                         {term.name}
                       </Text>
-                      {(term.has_unpaid_invoices === true) && (
+                      {term.has_unpaid_invoices && (
                         <View style={styles.unpaidIndicator}>
                           <View style={styles.unpaidIndicatorContainer}>
                             <IconSymbol name="exclamationmark.triangle.fill" size={12} color="#DC2626" />
                             <Text style={styles.unpaidIndicatorText}>
-                              {term.unpaid_invoices_count || 0} unpaid invoice{(term.unpaid_invoices_count || 0) > 1 ? 's' : ''}
+                              {term.unpaid_invoices_count} unpaid invoice{term.unpaid_invoices_count > 1 ? 's' : ''}
                             </Text>
                           </View>
                           <Text style={styles.unpaidAmountText}>
-                            ₱{Number(term.total_unpaid_amount || 0).toLocaleString()}
+                            ₱{term.total_unpaid_amount?.toLocaleString() || '0'}
                           </Text>
                         </View>
                       )}
@@ -1068,7 +1068,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   modalBody: {
+    maxHeight: 300,
+  },
+  paymentPlanModalBody: {
     flex: 1,
+    paddingBottom: 20,
   },
   termOption: {
     padding: 16,
@@ -1254,9 +1258,8 @@ const styles = StyleSheet.create({
   },
   // Payment Plan Modal Styles
   paymentPlanModal: {
-    height: '75%',
-    maxHeight: '75%',
-    minHeight: '70%',
+    flex: 1,
+    maxHeight: '80%',
   },
   planBreakdown: {
     padding: 16,
@@ -1474,5 +1477,14 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     flex: 1,
     lineHeight: 16,
+  },
+  // Loading styles
+  loadingContainer: {
+    padding: 32,
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 14,
+    marginTop: 12,
   },
 });
