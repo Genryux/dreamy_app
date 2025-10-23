@@ -25,8 +25,8 @@ export default function Dashboard() {
 
   if (loading && !data) {
     return (
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
-        <View style={[styles.loadingContainer, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colorScheme === 'dark' ? '#1A3165' : Colors[colorScheme ?? 'light'].background }]}>
+        <View style={[styles.loadingContainer, { backgroundColor: colorScheme === 'dark' ? '#1A3165' : Colors[colorScheme ?? 'light'].background }]}>
           <ActivityIndicator size="large" color={Colors[colorScheme ?? 'light'].tint} />
           <Text style={[styles.loadingText, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>Loading dashboard...</Text>
         </View>
@@ -36,8 +36,8 @@ export default function Dashboard() {
 
   if (error && !data) {
     return (
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
-        <View style={[styles.errorContainer, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colorScheme === 'dark' ? '#1A3165' : Colors[colorScheme ?? 'light'].background }]}>
+        <View style={[styles.errorContainer, { backgroundColor: colorScheme === 'dark' ? '#1A3165' : Colors[colorScheme ?? 'light'].background }]}>
           <Text style={[styles.errorTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Unable to load dashboard</Text>
           <Text style={[styles.errorText, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>{error}</Text>
         </View>
@@ -47,8 +47,8 @@ export default function Dashboard() {
 
   if (!data) {
     return (
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
-        <View style={[styles.errorContainer, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colorScheme === 'dark' ? '#1A3165' : Colors[colorScheme ?? 'light'].background }]}>
+        <View style={[styles.errorContainer, { backgroundColor: colorScheme === 'dark' ? '#1A3165' : Colors[colorScheme ?? 'light'].background }]}>
           <Text style={[styles.errorTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>No data available</Text>
           <Text style={[styles.errorText, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>Please try refreshing</Text>
         </View>
@@ -56,13 +56,6 @@ export default function Dashboard() {
     );
   }
 
-  const handleNewsPress = (newsItem: any) => {
-    Alert.alert(
-      newsItem.title,
-      newsItem.content.replace(/<[^>]*>/g, ''), // Strip HTML tags
-      [{ text: 'OK' }]
-    );
-  };
 
   const handleConfirmEnrollment = async () => {
     if (!data?.enrollment?.id) {
@@ -99,7 +92,7 @@ export default function Dashboard() {
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colorScheme === 'dark' ? '#1A3165' : Colors[colorScheme ?? 'light'].background }]}>
       <ScrollView 
         style={styles.container}
         contentContainerStyle={styles.scrollContent}
@@ -119,21 +112,27 @@ export default function Dashboard() {
       <QuickStats activities={data.recent_activity} />
 
       {/* News & Announcements Section */}
-      <View style={styles.newsSection}>
-        <Text style={[styles.sectionTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Latest Updates</Text>
+      <View style={[styles.newsSection, {
+        backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+        borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder
+      }]}>
+        <View style={styles.sectionTitleContainer}>
+          <Text style={[styles.sectionTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Latest Updates</Text>
+        </View>
         
         {/* Announcements */}
         {data.announcements && data.announcements.length > 0 && (
           <View style={styles.subsection}>
             <View style={styles.subsectionTitleContainer}>
-              <IconSymbol name="megaphone.fill" size={16} color={Colors[colorScheme ?? 'light'].tint} />
               <Text style={[styles.subsectionTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Announcements</Text>
+              <View style={[styles.countBadge, { backgroundColor: '#199BCF' }]}>
+                <Text style={styles.countText}>{data.announcements.length}</Text>
+              </View>
             </View>
             {data.announcements.map((announcement) => (
               <NewsCard 
                 key={announcement.id} 
-                item={announcement} 
-                onPress={() => handleNewsPress(announcement)}
+                item={announcement}
               />
             ))}
           </View>
@@ -143,14 +142,15 @@ export default function Dashboard() {
         {data.news && data.news.length > 0 && (
           <View style={styles.subsection}>
             <View style={styles.subsectionTitleContainer}>
-              <IconSymbol name="newspaper.fill" size={16} color={Colors[colorScheme ?? 'light'].tint} />
               <Text style={[styles.subsectionTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>News</Text>
+              <View style={[styles.countBadge, { backgroundColor: '#199BCF' }]}>
+                <Text style={styles.countText}>{data.news.length}</Text>
+              </View>
             </View>
             {data.news.map((newsItem) => (
               <NewsCard 
                 key={newsItem.id} 
-                item={newsItem} 
-                onPress={() => handleNewsPress(newsItem)}
+                item={newsItem}
               />
             ))}
           </View>
@@ -159,10 +159,8 @@ export default function Dashboard() {
         {/* Empty state */}
         {(!data.news || data.news.length === 0) && 
          (!data.announcements || data.announcements.length === 0) && (
-          <View style={[styles.emptyState, { 
-            backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-            borderColor: Colors[colorScheme ?? 'light'].cardBorder 
-          }]}>
+          <View style={styles.emptyState}>
+            <IconSymbol name="newspaper" size={24} color={Colors[colorScheme ?? 'light'].textSecondary} />
             <Text style={[styles.emptyTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>No updates available</Text>
             <Text style={[styles.emptyText, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>Check back later for news and announcements</Text>
           </View>
@@ -216,44 +214,60 @@ const styles = StyleSheet.create({
   },
   newsSection: {
     marginBottom: 16,
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
   },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#1A3165',
-    marginBottom: 16,
-  },
-  subsection: {
-    marginBottom: 20,
-  },
-  subsectionTitleContainer: {
+  sectionTitleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 12,
   },
-  subsectionTitle: {
+  sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1A3165',
     marginLeft: 8,
   },
-  emptyState: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 32,
+  subsection: {
+    marginBottom: 16,
+  },
+  subsectionTitleContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  subsectionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 6,
+    flex: 1,
+  },
+  countBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 10,
+    minWidth: 20,
+    alignItems: 'center',
+  },
+  countText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  emptyState: {
+    padding: 24,
+    alignItems: 'center',
   },
   emptyTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1A3165',
-    marginBottom: 8,
+    fontSize: 14,
+    fontWeight: '600',
+    marginTop: 8,
+    marginBottom: 4,
   },
   emptyText: {
-    fontSize: 14,
-    color: '#9CA3AF',
+    fontSize: 12,
     textAlign: 'center',
+    lineHeight: 16,
   },
 });

@@ -5,10 +5,10 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import React, { useState } from 'react';
 import {
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -17,7 +17,7 @@ export default function FinancialScreen() {
   const colorScheme = useColorScheme();
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colorScheme === 'dark' ? '#1A3165' : Colors[colorScheme ?? 'light'].background }]}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={[styles.headerTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Financial Information</Text>
@@ -26,8 +26,8 @@ export default function FinancialScreen() {
 
       {/* Tab Switcher */}
       <View style={[styles.tabContainer, { 
-        backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-        borderColor: Colors[colorScheme ?? 'light'].cardBorder 
+        backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+        borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder 
       }]}>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'invoices' && styles.activeTab]}
@@ -39,7 +39,9 @@ export default function FinancialScreen() {
               size={18} 
               color={activeTab === 'invoices' ? '#FFFFFF' : '#199BCF'} 
             />
-            <Text style={[styles.tabText, activeTab === 'invoices' && styles.activeTabText]}>
+            <Text style={[styles.tabText, { 
+              color: activeTab === 'invoices' ? '#FFFFFF' : Colors[colorScheme ?? 'light'].textSecondary 
+            }]}>
               Invoices
             </Text>
           </View>
@@ -54,7 +56,9 @@ export default function FinancialScreen() {
               size={18} 
               color={activeTab === 'payments' ? '#FFFFFF' : '#199BCF'} 
             />
-            <Text style={[styles.tabText, activeTab === 'payments' && styles.activeTabText]}>
+            <Text style={[styles.tabText, { 
+              color: activeTab === 'payments' ? '#FFFFFF' : Colors[colorScheme ?? 'light'].textSecondary 
+            }]}>
               Payments
             </Text>
           </View>
@@ -79,28 +83,24 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   header: {
-    paddingTop: 8,
+    paddingTop: 16,
     paddingHorizontal: 20,
     paddingBottom: 16,
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#1A3165',
     marginBottom: 4,
   },
   headerSubtitle: {
     fontSize: 14,
-    color: '#6B7280',
   },
   tabContainer: {
     flexDirection: 'row',
-    backgroundColor: '#ffffff',
     marginHorizontal: 16,
     borderRadius: 12,
     padding: 4,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
   },
   tab: {
     flex: 1,
@@ -120,7 +120,6 @@ const styles = StyleSheet.create({
   tabText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#6B7280',
   },
   activeTabText: {
     color: '#ffffff',

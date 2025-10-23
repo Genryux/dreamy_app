@@ -27,29 +27,38 @@ export default function QuickStats({ activities, onViewAllPress }: QuickStatsPro
 
   return (
     <View style={[styles.container, { 
-      backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-      borderColor: Colors[colorScheme ?? 'light'].cardBorder 
+      backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+      borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder 
     }]}>
       <View style={styles.header}>
-        <Text style={[styles.title, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Recent Activity</Text>
+        <View style={styles.titleContainer}>
+          <Text style={[styles.title, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Recent Activity</Text>
+        </View>
         {onViewAllPress && (
           <TouchableOpacity onPress={onViewAllPress}>
-            <Text style={[styles.viewAllText, { color: Colors[colorScheme ?? 'light'].tint }]}>View All</Text>
+            <Text style={[styles.viewAllText, { color: '#199BCF' }]}>View All</Text>
           </TouchableOpacity>
         )}
       </View>
       
       {activities.length === 0 ? (
-        <View style={styles.emptyState}>
+        <View style={[styles.emptyState, {
+          backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].sectionBackground,
+          borderColor: colorScheme === 'dark' ? '#4A5F8B' : Colors[colorScheme ?? 'light'].cardBorder
+        }]}>
+          <IconSymbol name="clock" size={24} color={Colors[colorScheme ?? 'light'].textSecondary} />
           <Text style={[styles.emptyText, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>No recent activity</Text>
           <Text style={[styles.emptySubtext, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>Your activities will appear here</Text>
         </View>
       ) : (
         <View style={styles.activitiesList}>
           {activities.slice(0, 3).map((activity, index) => (
-            <View key={index} style={styles.activityItem}>
-              <View style={[styles.activityIcon, { backgroundColor: Colors[colorScheme ?? 'light'].sectionBackground }]}>
-                <IconSymbol name={getActivityIcon(activity.type)} size={16} color={Colors[colorScheme ?? 'light'].tint} />
+            <View key={index} style={[styles.activityItem, {
+              backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].sectionBackground,
+              borderColor: colorScheme === 'dark' ? '#4A5F8B' : Colors[colorScheme ?? 'light'].cardBorder
+            }]}>
+              <View style={[styles.activityIcon, { backgroundColor: '#199BCF' }]}>
+                <IconSymbol name={getActivityIcon(activity.type)} size={14} color="#FFFFFF" />
               </View>
               <View style={styles.activityContent}>
                 <Text style={[styles.activityMessage, { color: Colors[colorScheme ?? 'light'].textPrimary }]} numberOfLines={2}>
@@ -78,58 +87,64 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
+  },
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   title: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1A3165',
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
   },
   viewAllText: {
-    fontSize: 14,
-    color: '#199BCF',
-    fontWeight: '600',
+    fontSize: 13,
+    fontWeight: '500',
   },
   emptyState: {
     alignItems: 'center',
-    paddingVertical: 24,
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    borderWidth: 1,
   },
   emptyText: {
-    fontSize: 16,
-    color: '#6B7280',
+    fontSize: 14,
     fontWeight: '500',
+    marginTop: 8,
     marginBottom: 4,
   },
   emptySubtext: {
-    fontSize: 14,
-    color: '#9CA3AF',
+    fontSize: 12,
   },
   activitiesList: {
-    gap: 12,
+    gap: 8,
   },
   activityItem: {
     flexDirection: 'row',
     alignItems: 'flex-start',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
   },
   activityIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: 10,
   },
   activityContent: {
     flex: 1,
   },
   activityMessage: {
-    fontSize: 14,
-    color: '#1A3165',
-    marginBottom: 4,
-    lineHeight: 20,
+    fontSize: 13,
+    marginBottom: 3,
+    lineHeight: 18,
   },
   activityDate: {
-    fontSize: 12,
-    color: '#6B7280',
+    fontSize: 11,
   },
 });

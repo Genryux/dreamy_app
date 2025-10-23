@@ -11,7 +11,7 @@ export default function TabBarBackground() {
       style={[
         StyleSheet.absoluteFill,
         {
-          backgroundColor: Colors[colorScheme ?? 'light'].tabBarBackground,
+          backgroundColor: colorScheme === 'dark' ? '#1A3165' : Colors[colorScheme ?? 'light'].tabBarBackground,
         }
       ]}
     />

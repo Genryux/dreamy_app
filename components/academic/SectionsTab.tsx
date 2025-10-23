@@ -4,12 +4,12 @@ import { useSectionData } from '@/hooks/useAcademic';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import React from 'react';
 import {
-    ActivityIndicator,
-    RefreshControl,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View,
+  ActivityIndicator,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 
 interface Classmate {
@@ -93,10 +93,9 @@ export default function SectionsTab({
 
   const renderClassmateItem = (classmate: Classmate) => (
     <View key={classmate.id} style={[styles.classmateItem, { 
-      backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-      borderColor: Colors[colorScheme ?? 'light'].cardBorder 
+      borderBottomColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder 
     }]}>
-      <View style={styles.classmateAvatar}>
+      <View style={[styles.classmateAvatar, { backgroundColor: '#199BCF' }]}>
         <Text style={styles.classmateInitial}>
           {classmate.name && classmate.name !== '-' 
             ? classmate.name.split(' ').map(n => n[0]).join('').slice(0, 2)
@@ -136,70 +135,79 @@ export default function SectionsTab({
         <RefreshControl refreshing={isLoading} onRefresh={refresh} />
       }
     >
-      {/* Full Section Overview */}
+      {/* Section Overview */}
       <View style={[styles.sectionOverviewCard, { 
-        backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-        borderColor: Colors[colorScheme ?? 'light'].cardBorder 
+        backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+        borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder 
       }]}>
         <View style={styles.sectionHeader}>
           <View style={styles.sectionTitleContainer}>
-            <IconSymbol name="book.fill" size={18} color="#199BCF" />
+
             <Text style={[styles.sectionTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Section Overview</Text>
           </View>
-          <View style={styles.sectionBadge}>
+          <View style={[styles.sectionBadge, { backgroundColor: '#199BCF' }]}>
             <Text style={styles.sectionBadgeText}>{displaySection?.name || '-'}</Text>
           </View>
         </View>
         
         {displaySection ? (
           <View style={styles.sectionDetails}>
-            <View style={styles.detailRow}>
+            <View style={[styles.detailRow, { borderBottomColor: colorScheme === 'dark' ? '#3A4F7B' : '#F3F4F6' }]}>
               <View style={styles.detailLabelContainer}>
-                <IconSymbol name="graduationcap.fill" size={14} color="#199BCF" />
-                <Text style={[styles.detailLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Grade Level:</Text>
+                <View style={[styles.detailIconContainer, { backgroundColor: '#199BCF' }]}>
+                  <IconSymbol name="graduationcap.fill" size={10} color="#FFFFFF" />
+                </View>
+                <Text style={[styles.detailLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Program</Text>
               </View>
               <Text style={[styles.detailValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{displaySection.grade_level || '-'}</Text>
             </View>
             
-            <View style={styles.detailRow}>
+            <View style={[styles.detailRow, { borderBottomColor: colorScheme === 'dark' ? '#3A4F7B' : '#F3F4F6' }]}>
               <View style={styles.detailLabelContainer}>
-                <IconSymbol name="calendar" size={14} color="#199BCF" />
-                <Text style={[styles.detailLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Academic Term:</Text>
+                <View style={[styles.detailIconContainer, { backgroundColor: '#199BCF' }]}>
+                  <IconSymbol name="calendar" size={10} color="#FFFFFF" />
+                </View>
+                <Text style={[styles.detailLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Academic Term</Text>
               </View>
               <Text style={[styles.detailValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{displaySection.academic_term || '-'}</Text>
             </View>
             
-            <View style={styles.detailRow}>
+            <View style={[styles.detailRow, { borderBottomColor: 'transparent' }]}>
               <View style={styles.detailLabelContainer}>
-                <IconSymbol name="person.2.fill" size={14} color="#199BCF" />
-                <Text style={[styles.detailLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Total Students:</Text>
+                <View style={[styles.detailIconContainer, { backgroundColor: '#199BCF' }]}>
+                  <IconSymbol name="person.2.fill" size={10} color="#FFFFFF" />
+                </View>
+                <Text style={[styles.detailLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Total Students</Text>
               </View>
               <Text style={[styles.detailValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{displaySection.total_students || 0} students</Text>
             </View>
           </View>
         ) : (
-          <View style={styles.emptySectionInfo}>
+          <View style={[styles.emptySectionInfo, {
+            backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].sectionBackground,
+            borderColor: colorScheme === 'dark' ? '#4A5F8B' : Colors[colorScheme ?? 'light'].cardBorder
+          }]}>
             <Text style={[styles.emptySectionText, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>No section information available</Text>
             <Text style={[styles.emptySectionSubtext, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>Section details will appear here once you are enrolled</Text>
           </View>
         )}
       </View>
 
-      {/* Adviser Information */}
+      {/* Class Adviser */}
       <View style={[styles.adviserCard, { 
-        backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-        borderColor: Colors[colorScheme ?? 'light'].cardBorder 
+        backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+        borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder 
       }]}>
         <View style={styles.adviserHeader}>
           <View style={styles.adviserTitleContainer}>
-            <IconSymbol name="person.fill" size={18} color="#199BCF" />
+
             <Text style={[styles.adviserTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Class Adviser</Text>
           </View>
         </View>
         
         {displayAdviser && displayAdviser.name !== '-' ? (
           <View style={styles.adviserInfo}>
-            <View style={styles.adviserAvatar}>
+            <View style={[styles.adviserAvatar, { backgroundColor: '#199BCF' }]}>
               <Text style={styles.adviserInitial}>
                 {displayAdviser.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
               </Text>
@@ -208,28 +216,34 @@ export default function SectionsTab({
             <View style={styles.adviserDetails}>
               <Text style={[styles.adviserName, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>{displayAdviser.name}</Text>
               {displayAdviser.email && displayAdviser.email !== '-' && (
-                <View style={styles.adviserDetailRow}>
+                <View style={[styles.adviserDetailRow, { borderBottomColor: colorScheme === 'dark' ? '#3A4F7B' : '#F3F4F6' }]}>
                   <View style={styles.adviserDetailLabelContainer}>
-                    <IconSymbol name="envelope.fill" size={14} color="#199BCF" />
-                    <Text style={[styles.adviserDetailLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Email:</Text>
+                    <View style={[styles.adviserDetailIconContainer, { backgroundColor: '#199BCF' }]}>
+                      <IconSymbol name="envelope.fill" size={10} color="#FFFFFF" />
+                    </View>
+                    <Text style={[styles.adviserDetailLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Email</Text>
                   </View>
                   <Text style={[styles.adviserDetailValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{displayAdviser.email}</Text>
                 </View>
               )}
               {displayAdviser.phone && displayAdviser.phone !== '-' && (
-                <View style={styles.adviserDetailRow}>
+                <View style={[styles.adviserDetailRow, { borderBottomColor: colorScheme === 'dark' ? '#3A4F7B' : '#F3F4F6' }]}>
                   <View style={styles.adviserDetailLabelContainer}>
-                    <IconSymbol name="phone.fill" size={14} color="#199BCF" />
-                    <Text style={[styles.adviserDetailLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Phone:</Text>
+                    <View style={[styles.adviserDetailIconContainer, { backgroundColor: '#199BCF' }]}>
+                      <IconSymbol name="phone.fill" size={10} color="#FFFFFF" />
+                    </View>
+                    <Text style={[styles.adviserDetailLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Phone</Text>
                   </View>
                   <Text style={[styles.adviserDetailValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{displayAdviser.phone}</Text>
                 </View>
               )}
               {displayAdviser.office && displayAdviser.office !== '-' && (
-                <View style={styles.adviserDetailRow}>
+                <View style={[styles.adviserDetailRow, { borderBottomColor: 'transparent' }]}>
                   <View style={styles.adviserDetailLabelContainer}>
-                    <IconSymbol name="building.2.fill" size={14} color="#199BCF" />
-                    <Text style={[styles.adviserDetailLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Office:</Text>
+                    <View style={[styles.adviserDetailIconContainer, { backgroundColor: '#199BCF' }]}>
+                      <IconSymbol name="building.2.fill" size={10} color="#FFFFFF" />
+                    </View>
+                    <Text style={[styles.adviserDetailLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Office</Text>
                   </View>
                   <Text style={[styles.adviserDetailValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{displayAdviser.office}</Text>
                 </View>
@@ -238,8 +252,8 @@ export default function SectionsTab({
           </View>
         ) : (
           <View style={[styles.emptyAdviserInfo, { 
-            backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-            borderColor: Colors[colorScheme ?? 'light'].cardBorder 
+            backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].sectionBackground,
+            borderColor: colorScheme === 'dark' ? '#4A5F8B' : Colors[colorScheme ?? 'light'].cardBorder
           }]}>
             <Text style={[styles.emptyAdviserText, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>No class adviser assigned</Text>
             <Text style={[styles.emptyAdviserSubtext, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>Adviser information will appear here once assigned</Text>
@@ -247,24 +261,24 @@ export default function SectionsTab({
         )}
       </View>
 
-      {/* Classmates List */}
+      {/* Your Classmates */}
       <View style={styles.classmatesSection}>
         <View style={styles.classmatesHeader}>
-          <View style={styles.classmatesTitleContainer}>
-            <IconSymbol name="person.2.fill" size={20} color="#199BCF" />
-            <Text style={[styles.classmatesTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Your Classmates</Text>
-          </View>
+          <Text style={[styles.classmatesTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Your Classmates</Text>
           <Text style={[styles.classmatesSubtitle, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>{displayClassmates.length} students in your section</Text>
         </View>
         
         {displayClassmates.length > 0 ? (
-          <View style={styles.classmatesList}>
+          <View style={[styles.classmatesList, { 
+            backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+            borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder 
+          }]}>
             {displayClassmates.map(renderClassmateItem)}
           </View>
         ) : (
           <View style={[styles.emptyClassmates, { 
-            backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-            borderColor: Colors[colorScheme ?? 'light'].cardBorder 
+            backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+            borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder 
           }]}>
             <Text style={[styles.emptyClassmatesText, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>No classmates found</Text>
             <Text style={[styles.emptyClassmatesSubtext, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>Classmates will appear here once they are enrolled</Text>
@@ -286,134 +300,161 @@ const styles = StyleSheet.create({
     paddingBottom: 100, // Extra padding for floating tab bar
   },
   sectionOverviewCard: {
-    backgroundColor: '#ffffff',
     borderRadius: 12,
-    padding: 20,
+    padding: 16,
     marginTop: 8,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 14,
   },
   sectionTitleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
+  sectionIconContainer: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
-    color: '#1A3165',
-    marginLeft: 8,
   },
   sectionBadge: {
-    backgroundColor: '#199BCF',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
     borderRadius: 8,
   },
   sectionBadgeText: {
     color: '#ffffff',
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
   },
   sectionDetails: {
-    gap: 12,
+    gap: 0,
   },
   detailRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    width: '100%',
   },
   detailLabelContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: 120,
+  },
+  detailIconContainer: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 6,
   },
   detailLabel: {
-    fontSize: 14,
-    color: '#6B7280',
-    fontWeight: '500',
-    marginLeft: 6,
+    fontSize: 12,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   detailValue: {
-    fontSize: 14,
-    color: '#1A3165',
+    fontSize: 13,
     fontWeight: '600',
-    flex: 1,
+    lineHeight: 18,
+    textAlign: 'right',
   },
   adviserCard: {
-    backgroundColor: '#ffffff',
     borderRadius: 12,
-    padding: 20,
+    padding: 16,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
   },
   adviserHeader: {
-    marginBottom: 16,
+    marginBottom: 14,
   },
   adviserTitleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
+  adviserIconContainer: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
   adviserTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
-    color: '#1A3165',
-    marginLeft: 8,
   },
   adviserInfo: {
     flexDirection: 'row',
     alignItems: 'flex-start',
   },
   adviserAvatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: '#199BCF',
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
+    marginRight: 12,
   },
   adviserInitial: {
     color: '#ffffff',
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
   },
   adviserDetails: {
     flex: 1,
   },
   adviserName: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
-    color: '#1A3165',
-    marginBottom: 12,
+    marginBottom: 10,
+    lineHeight: 20,
   },
   adviserDetailRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    width: '100%',
   },
   adviserDetailLabelContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: 80,
+  },
+  adviserDetailIconContainer: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 6,
   },
   adviserDetailLabel: {
-    fontSize: 14,
-    color: '#6B7280',
-    fontWeight: '500',
-    marginLeft: 6,
+    fontSize: 12,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   adviserDetailValue: {
-    fontSize: 14,
-    color: '#1A3165',
+    fontSize: 13,
     fontWeight: '600',
-    flex: 1,
+    lineHeight: 18,
+    textAlign: 'right',
   },
   classmatesSection: {
     marginBottom: 20,
@@ -421,40 +462,29 @@ const styles = StyleSheet.create({
   classmatesHeader: {
     marginBottom: 16,
   },
-  classmatesTitleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  classmatesTitle: {
+    fontSize: 18,
+    fontWeight: '700',
     marginBottom: 4,
   },
-  classmatesTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#1A3165',
-    marginLeft: 8,
-  },
   classmatesSubtitle: {
-    fontSize: 14,
-    color: '#6B7280',
+    fontSize: 13,
   },
   classmatesList: {
-    backgroundColor: '#ffffff',
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
   },
   classmateItem: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
   },
   classmateAvatar: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#C8A165',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -468,14 +498,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   classmateName: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
-    color: '#1A3165',
     marginBottom: 2,
+    lineHeight: 18,
   },
   classmateLrn: {
     fontSize: 12,
-    color: '#6B7280',
+    lineHeight: 16,
   },
   emptyState: {
     alignItems: 'center',
@@ -526,24 +556,21 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   emptyClassmates: {
-    backgroundColor: '#ffffff',
     borderRadius: 12,
     padding: 24,
     alignItems: 'center',
     marginTop: 12,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
   },
   emptyClassmatesText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1A3165',
     marginBottom: 8,
   },
   emptyClassmatesSubtext: {
     fontSize: 14,
-    color: '#9CA3AF',
     textAlign: 'center',
+    lineHeight: 18,
   },
   emptySectionInfo: {
     backgroundColor: '#ffffff',

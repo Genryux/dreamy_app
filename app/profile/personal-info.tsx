@@ -55,7 +55,7 @@ export default function PersonalInfoScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colorScheme === 'dark' ? '#1A3165' : Colors[colorScheme ?? 'light'].background }]}>
         <View style={styles.loadingContainer}>
           <Text style={[styles.loadingText, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>Loading personal information...</Text>
         </View>
@@ -65,7 +65,7 @@ export default function PersonalInfoScreen() {
 
   if (error) {
     return (
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colorScheme === 'dark' ? '#1A3165' : Colors[colorScheme ?? 'light'].background }]}>
         <View style={styles.errorContainer}>
           <Text style={[styles.errorText, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>Error loading personal information: {error}</Text>
         </View>
@@ -142,6 +142,53 @@ export default function PersonalInfoScreen() {
     }));
   };
 
+  // Format birthdate for display
+  const formatBirthdate = (dateString: string) => {
+    if (!dateString) return 'Not provided';
+    
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return dateString; // Return original if invalid
+      
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    } catch (error) {
+      return dateString; // Return original if formatting fails
+    }
+  };
+
+  // Format address for display
+  const formatAddress = (address: any) => {
+    if (!address) return 'Not provided';
+    
+    // If it's already a string, clean it up
+    if (typeof address === 'string') {
+      const cleaned = address.trim();
+      // Check if it's just commas, spaces, or empty
+      if (!cleaned || cleaned.match(/^[,,\s]*$/)) {
+        return 'Not provided';
+      }
+      return cleaned;
+    }
+    
+    // If it's an array, join with proper formatting
+    if (Array.isArray(address)) {
+      const filteredAddress = address.filter(item => item && item.trim());
+      return filteredAddress.length > 0 ? filteredAddress.join(', ') : 'Not provided';
+    }
+    
+    // If it's an object, try to extract meaningful values
+    if (typeof address === 'object') {
+      const values = Object.values(address).filter(value => value && String(value).trim());
+      return values.length > 0 ? values.join(', ') : 'Not provided';
+    }
+    
+    return 'Not provided';
+  };
+
   return (
     <>
       <Stack.Screen
@@ -156,8 +203,8 @@ export default function PersonalInfoScreen() {
           },
         }}
       />
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
-        <View style={{ flex: 1, backgroundColor: Colors[colorScheme ?? 'light'].background }}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colorScheme === 'dark' ? '#1A3165' : Colors[colorScheme ?? 'light'].background }]}>
+        <View style={{ flex: 1, backgroundColor: colorScheme === 'dark' ? '#1A3165' : Colors[colorScheme ?? 'light'].background }}>
         {/* Header */}
         <View style={styles.header}>
           <Text style={[styles.headerTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Personal Information</Text>
@@ -172,8 +219,8 @@ export default function PersonalInfoScreen() {
         >
           {/* Basic Information Card */}
           <View style={[styles.infoCard, { 
-            backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-            borderColor: Colors[colorScheme ?? 'light'].cardBorder 
+            backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+            borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder 
           }]}>
             <View style={styles.cardHeader}>
               <View style={styles.cardTitleContainer}>
@@ -209,12 +256,20 @@ export default function PersonalInfoScreen() {
 
             <View style={styles.fieldContainer}>
               <Text style={[styles.fieldLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Full Name</Text>
-              <Text style={[styles.fieldValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{student?.name || 'Not available'}</Text>
+              <Text style={[styles.fieldValue, { 
+                color: Colors[colorScheme ?? 'light'].textValue,
+                backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : '#F9FAFB',
+                borderColor: colorScheme === 'dark' ? '#4A5F8B' : '#F3F4F6'
+              }]}>{student?.name || 'Not available'}</Text>
             </View>
 
             <View style={styles.fieldContainer}>
               <Text style={[styles.fieldLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>LRN (Learner Reference Number)</Text>
-              <Text style={[styles.fieldValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{student?.lrn || 'Not assigned'}</Text>
+              <Text style={[styles.fieldValue, { 
+                color: Colors[colorScheme ?? 'light'].textValue,
+                backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : '#F9FAFB',
+                borderColor: colorScheme === 'dark' ? '#4A5F8B' : '#F3F4F6'
+              }]}>{student?.lrn || 'Not assigned'}</Text>
             </View>
 
             <View style={styles.fieldContainer}>
@@ -222,8 +277,8 @@ export default function PersonalInfoScreen() {
               {isEditing ? (
                 <TextInput
                   style={[styles.fieldInput, { 
-                    backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-                    borderColor: Colors[colorScheme ?? 'light'].cardBorder,
+                    backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+                    borderColor: '#199BCF',
                     color: Colors[colorScheme ?? 'light'].textValue 
                   }]}
                   value={editedData.age}
@@ -233,7 +288,11 @@ export default function PersonalInfoScreen() {
                   keyboardType="numeric"
                 />
               ) : (
-                <Text style={[styles.fieldValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{student?.age || 'Not specified'}</Text>
+                <Text style={[styles.fieldValue, { 
+                  color: Colors[colorScheme ?? 'light'].textValue,
+                  backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : '#F9FAFB',
+                  borderColor: colorScheme === 'dark' ? '#4A5F8B' : '#F3F4F6'
+                }]}>{student?.age || 'Not specified'}</Text>
               )}
             </View>
 
@@ -242,8 +301,8 @@ export default function PersonalInfoScreen() {
               {isEditing ? (
                 <TextInput
                   style={[styles.fieldInput, { 
-                    backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-                    borderColor: Colors[colorScheme ?? 'light'].cardBorder,
+                    backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+                    borderColor: '#199BCF',
                     color: Colors[colorScheme ?? 'light'].textValue 
                   }]}
                   value={editedData.gender}
@@ -252,7 +311,11 @@ export default function PersonalInfoScreen() {
                   placeholderTextColor={Colors[colorScheme ?? 'light'].textTertiary}
                 />
               ) : (
-                <Text style={[styles.fieldValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{student?.gender || 'Not specified'}</Text>
+                <Text style={[styles.fieldValue, { 
+                  color: Colors[colorScheme ?? 'light'].textValue,
+                  backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : '#F9FAFB',
+                  borderColor: colorScheme === 'dark' ? '#4A5F8B' : '#F3F4F6'
+                }]}>{student?.gender || 'Not specified'}</Text>
               )}
             </View>
 
@@ -261,8 +324,8 @@ export default function PersonalInfoScreen() {
               {isEditing ? (
                 <TextInput
                   style={[styles.fieldInput, { 
-                    backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-                    borderColor: Colors[colorScheme ?? 'light'].cardBorder,
+                    backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+                    borderColor: '#199BCF',
                     color: Colors[colorScheme ?? 'light'].textValue 
                   }]}
                   value={editedData.contact_number}
@@ -272,21 +335,29 @@ export default function PersonalInfoScreen() {
                   keyboardType="phone-pad"
                 />
               ) : (
-                <Text style={[styles.fieldValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{student?.contact_number || 'Not provided'}</Text>
+                <Text style={[styles.fieldValue, { 
+                  color: Colors[colorScheme ?? 'light'].textValue,
+                  backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : '#F9FAFB',
+                  borderColor: colorScheme === 'dark' ? '#4A5F8B' : '#F3F4F6'
+                }]}>{student?.contact_number || 'Not provided'}</Text>
               )}
             </View>
 
             <View style={styles.fieldContainer}>
               <Text style={[styles.fieldLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Email Address</Text>
-              <Text style={[styles.fieldValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{student?.email_address || 'Not provided'}</Text>
+              <Text style={[styles.fieldValue, { 
+                color: Colors[colorScheme ?? 'light'].textValue,
+                backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : '#F9FAFB',
+                borderColor: colorScheme === 'dark' ? '#4A5F8B' : '#F3F4F6'
+              }]}>{student?.email_address || 'Not provided'}</Text>
               <Text style={[styles.fieldNote, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>Email can be changed in Account Settings</Text>
             </View>
           </View>
 
           {/* Additional Personal Information Card */}
           <View style={[styles.infoCard, { 
-            backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-            borderColor: Colors[colorScheme ?? 'light'].cardBorder 
+            backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+            borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder 
           }]}>
             <View style={styles.cardHeader}>
               <View style={styles.cardTitleContainer}>
@@ -302,8 +373,8 @@ export default function PersonalInfoScreen() {
               {isEditing ? (
                 <TextInput
                   style={[styles.fieldInput, { 
-                    backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-                    borderColor: Colors[colorScheme ?? 'light'].cardBorder,
+                    backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+                    borderColor: '#199BCF',
                     color: Colors[colorScheme ?? 'light'].textValue 
                   }]}
                   value={editedData.middle_name}
@@ -312,7 +383,11 @@ export default function PersonalInfoScreen() {
                   placeholderTextColor={Colors[colorScheme ?? 'light'].textTertiary}
                 />
               ) : (
-                <Text style={[styles.fieldValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{student?.middle_name || 'Not provided'}</Text>
+                <Text style={[styles.fieldValue, { 
+                  color: Colors[colorScheme ?? 'light'].textValue,
+                  backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : '#F9FAFB',
+                  borderColor: colorScheme === 'dark' ? '#4A5F8B' : '#F3F4F6'
+                }]}>{student?.middle_name || 'Not provided'}</Text>
               )}
             </View>
 
@@ -321,8 +396,8 @@ export default function PersonalInfoScreen() {
               {isEditing ? (
                 <TextInput
                   style={[styles.fieldInput, { 
-                    backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-                    borderColor: Colors[colorScheme ?? 'light'].cardBorder,
+                    backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+                    borderColor: '#199BCF',
                     color: Colors[colorScheme ?? 'light'].textValue 
                   }]}
                   value={editedData.birthdate}
@@ -331,7 +406,11 @@ export default function PersonalInfoScreen() {
                   placeholderTextColor={Colors[colorScheme ?? 'light'].textTertiary}
                 />
               ) : (
-                <Text style={[styles.fieldValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{student?.birthdate || 'Not provided'}</Text>
+                <Text style={[styles.fieldValue, { 
+                  color: Colors[colorScheme ?? 'light'].textValue,
+                  backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : '#F9FAFB',
+                  borderColor: colorScheme === 'dark' ? '#4A5F8B' : '#F3F4F6'
+                }]}>{formatBirthdate(student?.birthdate || '')}</Text>
               )}
             </View>
 
@@ -340,8 +419,8 @@ export default function PersonalInfoScreen() {
               {isEditing ? (
                 <TextInput
                   style={[styles.fieldInput, { 
-                    backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-                    borderColor: Colors[colorScheme ?? 'light'].cardBorder,
+                    backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+                    borderColor: '#199BCF',
                     color: Colors[colorScheme ?? 'light'].textValue 
                   }]}
                   value={editedData.place_of_birth}
@@ -350,7 +429,11 @@ export default function PersonalInfoScreen() {
                   placeholderTextColor={Colors[colorScheme ?? 'light'].textTertiary}
                 />
               ) : (
-                <Text style={[styles.fieldValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{student?.place_of_birth || 'Not provided'}</Text>
+                <Text style={[styles.fieldValue, { 
+                  color: Colors[colorScheme ?? 'light'].textValue,
+                  backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : '#F9FAFB',
+                  borderColor: colorScheme === 'dark' ? '#4A5F8B' : '#F3F4F6'
+                }]}>{student?.place_of_birth || 'Not provided'}</Text>
               )}
             </View>
 
@@ -359,8 +442,8 @@ export default function PersonalInfoScreen() {
               {isEditing ? (
                 <TextInput
                   style={[styles.fieldInput, styles.multilineInput, { 
-                    backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-                    borderColor: Colors[colorScheme ?? 'light'].cardBorder,
+                    backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+                    borderColor: '#199BCF',
                     color: Colors[colorScheme ?? 'light'].textValue 
                   }]}
                   value={editedData.current_address}
@@ -371,7 +454,11 @@ export default function PersonalInfoScreen() {
                   numberOfLines={3}
                 />
               ) : (
-                <Text style={[styles.fieldValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{student?.current_address || 'Not provided'}</Text>
+                <Text style={[styles.fieldValue, { 
+                  color: Colors[colorScheme ?? 'light'].textValue,
+                  backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : '#F9FAFB',
+                  borderColor: colorScheme === 'dark' ? '#4A5F8B' : '#F3F4F6'
+                }]}>{formatAddress(student?.current_address)}</Text>
               )}
             </View>
 
@@ -380,8 +467,8 @@ export default function PersonalInfoScreen() {
               {isEditing ? (
                 <TextInput
                   style={[styles.fieldInput, styles.multilineInput, { 
-                    backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-                    borderColor: Colors[colorScheme ?? 'light'].cardBorder,
+                    backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+                    borderColor: '#199BCF',
                     color: Colors[colorScheme ?? 'light'].textValue 
                   }]}
                   value={editedData.permanent_address}
@@ -392,15 +479,19 @@ export default function PersonalInfoScreen() {
                   numberOfLines={3}
                 />
               ) : (
-                <Text style={[styles.fieldValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{student?.permanent_address || 'Not provided'}</Text>
+                <Text style={[styles.fieldValue, { 
+                  color: Colors[colorScheme ?? 'light'].textValue,
+                  backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : '#F9FAFB',
+                  borderColor: colorScheme === 'dark' ? '#4A5F8B' : '#F3F4F6'
+                }]}>{formatAddress(student?.permanent_address)}</Text>
               )}
             </View>
           </View>
 
           {/* Family Information Card */}
           <View style={[styles.infoCard, { 
-            backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-            borderColor: Colors[colorScheme ?? 'light'].cardBorder 
+            backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+            borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder 
           }]}>
             <View style={styles.cardHeader}>
               <View style={styles.cardTitleContainer}>
@@ -416,8 +507,8 @@ export default function PersonalInfoScreen() {
               {isEditing ? (
                 <TextInput
                   style={[styles.fieldInput, { 
-                    backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-                    borderColor: Colors[colorScheme ?? 'light'].cardBorder,
+                    backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+                    borderColor: '#199BCF',
                     color: Colors[colorScheme ?? 'light'].textValue 
                   }]}
                   value={editedData.father_name}
@@ -426,7 +517,11 @@ export default function PersonalInfoScreen() {
                   placeholderTextColor={Colors[colorScheme ?? 'light'].textTertiary}
                 />
               ) : (
-                <Text style={[styles.fieldValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{student?.father_name || 'Not provided'}</Text>
+                <Text style={[styles.fieldValue, { 
+                  color: Colors[colorScheme ?? 'light'].textValue,
+                  backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : '#F9FAFB',
+                  borderColor: colorScheme === 'dark' ? '#4A5F8B' : '#F3F4F6'
+                }]}>{student?.father_name || 'Not provided'}</Text>
               )}
             </View>
 
@@ -435,8 +530,8 @@ export default function PersonalInfoScreen() {
               {isEditing ? (
                 <TextInput
                   style={[styles.fieldInput, { 
-                    backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-                    borderColor: Colors[colorScheme ?? 'light'].cardBorder,
+                    backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+                    borderColor: '#199BCF',
                     color: Colors[colorScheme ?? 'light'].textValue 
                   }]}
                   value={editedData.father_contact_number}
@@ -446,7 +541,11 @@ export default function PersonalInfoScreen() {
                   keyboardType="phone-pad"
                 />
               ) : (
-                <Text style={[styles.fieldValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{student?.father_contact_number || 'Not provided'}</Text>
+                <Text style={[styles.fieldValue, { 
+                  color: Colors[colorScheme ?? 'light'].textValue,
+                  backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : '#F9FAFB',
+                  borderColor: colorScheme === 'dark' ? '#4A5F8B' : '#F3F4F6'
+                }]}>{student?.father_contact_number || 'Not provided'}</Text>
               )}
             </View>
 
@@ -455,8 +554,8 @@ export default function PersonalInfoScreen() {
               {isEditing ? (
                 <TextInput
                   style={[styles.fieldInput, { 
-                    backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-                    borderColor: Colors[colorScheme ?? 'light'].cardBorder,
+                    backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+                    borderColor: '#199BCF',
                     color: Colors[colorScheme ?? 'light'].textValue 
                   }]}
                   value={editedData.mother_name}
@@ -465,7 +564,11 @@ export default function PersonalInfoScreen() {
                   placeholderTextColor={Colors[colorScheme ?? 'light'].textTertiary}
                 />
               ) : (
-                <Text style={[styles.fieldValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{student?.mother_name || 'Not provided'}</Text>
+                <Text style={[styles.fieldValue, { 
+                  color: Colors[colorScheme ?? 'light'].textValue,
+                  backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : '#F9FAFB',
+                  borderColor: colorScheme === 'dark' ? '#4A5F8B' : '#F3F4F6'
+                }]}>{student?.mother_name || 'Not provided'}</Text>
               )}
             </View>
 
@@ -474,8 +577,8 @@ export default function PersonalInfoScreen() {
               {isEditing ? (
                 <TextInput
                   style={[styles.fieldInput, { 
-                    backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-                    borderColor: Colors[colorScheme ?? 'light'].cardBorder,
+                    backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+                    borderColor: '#199BCF',
                     color: Colors[colorScheme ?? 'light'].textValue 
                   }]}
                   value={editedData.mother_contact_number}
@@ -485,7 +588,11 @@ export default function PersonalInfoScreen() {
                   keyboardType="phone-pad"
                 />
               ) : (
-                <Text style={[styles.fieldValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{student?.mother_contact_number || 'Not provided'}</Text>
+                <Text style={[styles.fieldValue, { 
+                  color: Colors[colorScheme ?? 'light'].textValue,
+                  backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : '#F9FAFB',
+                  borderColor: colorScheme === 'dark' ? '#4A5F8B' : '#F3F4F6'
+                }]}>{student?.mother_contact_number || 'Not provided'}</Text>
               )}
             </View>
 
@@ -494,8 +601,8 @@ export default function PersonalInfoScreen() {
               {isEditing ? (
                 <TextInput
                   style={[styles.fieldInput, { 
-                    backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-                    borderColor: Colors[colorScheme ?? 'light'].cardBorder,
+                    backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+                    borderColor: '#199BCF',
                     color: Colors[colorScheme ?? 'light'].textValue 
                   }]}
                   value={editedData.guardian_name}
@@ -504,7 +611,11 @@ export default function PersonalInfoScreen() {
                   placeholderTextColor={Colors[colorScheme ?? 'light'].textTertiary}
                 />
               ) : (
-                <Text style={[styles.fieldValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{student?.guardian_name || 'Not provided'}</Text>
+                <Text style={[styles.fieldValue, { 
+                  color: Colors[colorScheme ?? 'light'].textValue,
+                  backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : '#F9FAFB',
+                  borderColor: colorScheme === 'dark' ? '#4A5F8B' : '#F3F4F6'
+                }]}>{student?.guardian_name || 'Not provided'}</Text>
               )}
             </View>
 
@@ -513,8 +624,8 @@ export default function PersonalInfoScreen() {
               {isEditing ? (
                 <TextInput
                   style={[styles.fieldInput, { 
-                    backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-                    borderColor: Colors[colorScheme ?? 'light'].cardBorder,
+                    backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+                    borderColor: '#199BCF',
                     color: Colors[colorScheme ?? 'light'].textValue 
                   }]}
                   value={editedData.guardian_contact_number}
@@ -524,15 +635,19 @@ export default function PersonalInfoScreen() {
                   keyboardType="phone-pad"
                 />
               ) : (
-                <Text style={[styles.fieldValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{student?.guardian_contact_number || 'Not provided'}</Text>
+                <Text style={[styles.fieldValue, { 
+                  color: Colors[colorScheme ?? 'light'].textValue,
+                  backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : '#F9FAFB',
+                  borderColor: colorScheme === 'dark' ? '#4A5F8B' : '#F3F4F6'
+                }]}>{student?.guardian_contact_number || 'Not provided'}</Text>
               )}
             </View>
           </View>
 
           {/* Academic Information Card */}
           <View style={[styles.infoCard, { 
-            backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-            borderColor: Colors[colorScheme ?? 'light'].cardBorder 
+            backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+            borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder 
           }]}>
             <View style={styles.cardHeader}>
               <View style={styles.cardTitleContainer}>
@@ -545,22 +660,38 @@ export default function PersonalInfoScreen() {
 
             <View style={styles.fieldContainer}>
               <Text style={[styles.fieldLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Program</Text>
-              <Text style={[styles.fieldValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{student?.program || 'Not specified'}</Text>
+              <Text style={[styles.fieldValue, { 
+                color: Colors[colorScheme ?? 'light'].textValue,
+                backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : '#F9FAFB',
+                borderColor: colorScheme === 'dark' ? '#4A5F8B' : '#F3F4F6'
+              }]}>{student?.program || 'Not specified'}</Text>
             </View>
 
             <View style={styles.fieldContainer}>
               <Text style={[styles.fieldLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Grade Level</Text>
-              <Text style={[styles.fieldValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{student?.grade_level || 'Not specified'}</Text>
+              <Text style={[styles.fieldValue, { 
+                color: Colors[colorScheme ?? 'light'].textValue,
+                backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : '#F9FAFB',
+                borderColor: colorScheme === 'dark' ? '#4A5F8B' : '#F3F4F6'
+              }]}>{student?.grade_level || 'Not specified'}</Text>
             </View>
 
             <View style={styles.fieldContainer}>
               <Text style={[styles.fieldLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Enrollment Date</Text>
-              <Text style={[styles.fieldValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{student?.enrollment_date || 'Not available'}</Text>
+              <Text style={[styles.fieldValue, { 
+                color: Colors[colorScheme ?? 'light'].textValue,
+                backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : '#F9FAFB',
+                borderColor: colorScheme === 'dark' ? '#4A5F8B' : '#F3F4F6'
+              }]}>{student?.enrollment_date || 'Not available'}</Text>
             </View>
 
             <View style={styles.fieldContainer}>
               <Text style={[styles.fieldLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Status</Text>
-              <Text style={[styles.fieldValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{student?.status || 'Not specified'}</Text>
+              <Text style={[styles.fieldValue, { 
+                color: Colors[colorScheme ?? 'light'].textValue,
+                backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : '#F9FAFB',
+                borderColor: colorScheme === 'dark' ? '#4A5F8B' : '#F3F4F6'
+              }]}>{student?.status || 'Not specified'}</Text>
             </View>
           </View>
         </ScrollView>
@@ -584,19 +715,17 @@ const styles = StyleSheet.create({
     paddingBottom: 100, // Space for floating tab bar
   },
   header: {
-    paddingTop: 8,
+    paddingTop: 4,
     paddingHorizontal: 20,
-    paddingBottom: 16,
+    paddingBottom: 12,
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#1A3165',
     marginBottom: 4,
   },
   headerSubtitle: {
     fontSize: 14,
-    color: '#6B7280',
   },
   loadingContainer: {
     flex: 1,
@@ -605,7 +734,6 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    color: '#6B7280',
     fontWeight: '500',
   },
   errorContainer: {
@@ -616,24 +744,21 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 16,
-    color: '#EF4444',
     fontWeight: '500',
     textAlign: 'center',
   },
   infoCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: 12,
+    padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
-    paddingBottom: 12,
+    marginBottom: 16,
+    paddingBottom: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#F3F4F6',
   },
@@ -643,31 +768,30 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   cardIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: '#F8F8F8',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 10,
+    marginRight: 8,
   },
   cardIconText: {
-    fontSize: 18,
+    fontSize: 16,
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
-    color: '#1A3165',
   },
   editButton: {
     backgroundColor: '#199BCF',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
   },
   editButtonText: {
     color: '#FFFFFF',
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     marginLeft: 4,
   },
@@ -677,61 +801,53 @@ const styles = StyleSheet.create({
   },
   actionButtons: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 6,
   },
   cancelButton: {
     backgroundColor: '#F3F4F6',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 6,
   },
   cancelButtonText: {
-    color: '#6B7280',
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     marginLeft: 4,
   },
   saveButton: {
     backgroundColor: '#199BCF',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 6,
   },
   saveButtonText: {
     color: '#FFFFFF',
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     marginLeft: 4,
   },
   fieldContainer: {
-    marginBottom: 16,
+    marginBottom: 14,
   },
   fieldLabel: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#6B7280',
-    marginBottom: 6,
+    fontSize: 12,
+    fontWeight: '600',
+    marginBottom: 4,
   },
   fieldValue: {
-    fontSize: 16,
-    color: '#1A3165',
+    fontSize: 14,
     fontWeight: '400',
-    backgroundColor: '#F9FAFB',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 6,
     borderWidth: 1,
-    borderColor: '#F3F4F6',
   },
   fieldInput: {
-    fontSize: 16,
-    color: '#1A3165',
-    backgroundColor: '#FFFFFF',
+    fontSize: 14,
     borderWidth: 1,
-    borderColor: '#199BCF',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
     fontWeight: '400',
   },
   multilineInput: {
@@ -740,7 +856,6 @@ const styles = StyleSheet.create({
   },
   fieldNote: {
     fontSize: 12,
-    color: '#199BCF',
     fontStyle: 'italic',
     marginTop: 4,
   },

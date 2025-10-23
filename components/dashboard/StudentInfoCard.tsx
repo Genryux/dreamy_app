@@ -14,6 +14,14 @@ interface StudentInfoCardProps {
 
 export default function StudentInfoCard({ student, enrollment, onConfirmEnrollment, confirming = false }: StudentInfoCardProps) {
   const colorScheme = useColorScheme();
+  
+  // Debug logging for enrollment confirmation
+  console.log('Enrollment Confirmation Debug:', {
+    status: enrollment.status,
+    evaluation_status: enrollment.evaluation_status,
+    term: enrollment.term,
+    shouldShowConfirmation: (enrollment.status === 'pending_confirmation' || enrollment.status === 'not_enrolled') && enrollment.evaluation_status === 'passed'
+  });
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'enrolled':
@@ -62,24 +70,23 @@ export default function StudentInfoCard({ student, enrollment, onConfirmEnrollme
 
   return (
     <View style={[styles.container, { 
-      backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-      borderColor: Colors[colorScheme ?? 'light'].cardBorder 
+      backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+      borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder 
     }]}>
-      <View style={[styles.welcomeContainer, { 
-        backgroundColor: Colors[colorScheme ?? 'light'].sectionBackground,
-        borderColor: Colors[colorScheme ?? 'light'].cardBorder 
+      {/* Welcome Section */}
+      <View style={[styles.welcomeSection, {
+        backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].sectionBackground,
+        borderColor: colorScheme === 'dark' ? '#4A5F8B' : Colors[colorScheme ?? 'light'].cardBorder
       }]}>
         <View style={styles.welcomeHeader}>
           <View style={styles.welcomeIconContainer}>
-            <IconSymbol name="person.fill" size={24} color="#FFFFFF" />
+            <IconSymbol name="person.fill" size={20} color="#FFFFFF" />
           </View>
           <View style={styles.welcomeTextContainer}>
             <Text style={[styles.welcomeText, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>Welcome back</Text>
             <Text style={[styles.studentName, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>{student.name}</Text>
           </View>
         </View>
-        
-        <View style={styles.welcomeDivider} />
         
         <View style={styles.quickInfo}>
           <View style={styles.quickInfoItem}>
@@ -95,49 +102,110 @@ export default function StudentInfoCard({ student, enrollment, onConfirmEnrollme
         </View>
       </View>
 
-      {/* Detailed Student Information */}
-      <View style={styles.detailedInfoContainer}>
-        <Text style={[styles.detailedInfoTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Student Information</Text>
-        <View style={styles.detailedInfoGrid}>
-          <View style={styles.detailedInfoItem}>
-            <Text style={[styles.detailedInfoLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Grade Level</Text>
-            <Text style={[styles.detailedInfoValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{student.grade_level}</Text>
+      {/* Student Information */}
+      <View style={[styles.infoSection, {
+        backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].sectionBackground,
+        borderColor: colorScheme === 'dark' ? '#4A5F8B' : Colors[colorScheme ?? 'light'].cardBorder
+      }]}>
+        <Text style={[styles.infoSectionTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Student Information</Text>
+        <View style={styles.infoGrid}>
+          <View style={styles.infoItem}>
+            <Text style={[styles.infoLabel, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>Grade Level</Text>
+            <Text style={[styles.infoValue, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>{student.grade_level}</Text>
           </View>
           
-          <View style={styles.detailedInfoItem}>
-            <Text style={[styles.detailedInfoLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Program</Text>
-            <Text style={[styles.detailedInfoValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{student.program}</Text>
+          <View style={styles.infoItem}>
+            <Text style={[styles.infoLabel, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>Program</Text>
+            <Text style={[styles.infoValue, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>{student.program}</Text>
           </View>
           
-          <View style={styles.detailedInfoItem}>
-            <Text style={[styles.detailedInfoLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Academic Term</Text>
-            <Text style={[styles.detailedInfoValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{enrollment.term || 'N/A'}</Text>
+          <View style={styles.infoItem}>
+            <Text style={[styles.infoLabel, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>Academic Term</Text>
+            <Text style={[styles.infoValue, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>{enrollment.term || 'N/A'}</Text>
           </View>
           
           {enrollment.confirmed_at && (
-            <View style={styles.detailedInfoItem}>
-              <Text style={[styles.detailedInfoLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Confirmed On</Text>
-              <Text style={[styles.detailedInfoValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{enrollment.confirmed_at}</Text>
+            <View style={styles.infoItem}>
+              <Text style={[styles.infoLabel, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>Confirmed On</Text>
+              <Text style={[styles.infoValue, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>{enrollment.confirmed_at}</Text>
             </View>
           )}
         </View>
       </View>
 
-      {/* Enrollment Confirmation Section */}
-      {enrollment.status === 'pending_confirmation' && (
+      {/* Academic Evaluation Status */}
+      {enrollment.evaluation_status && enrollment.evaluation_status !== null && (
+        <View style={[styles.evaluationSection, { 
+          backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].sectionBackground,
+          borderColor: colorScheme === 'dark' ? '#4A5F8B' : Colors[colorScheme ?? 'light'].cardBorder 
+        }]}>
+          <View style={styles.evaluationHeader}>
+            <IconSymbol name="graduationcap.fill" size={16} color={Colors[colorScheme ?? 'light'].tint} />
+            <Text style={[styles.evaluationTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Academic Evaluation</Text>
+          </View>
+          
+          <View style={[styles.evaluationStatusCard, { 
+            backgroundColor: enrollment.evaluation_status === 'passed' 
+              ? (colorScheme === 'dark' ? '#064E3B' : '#F0FDF4')
+              : (colorScheme === 'dark' ? '#7F1D1D' : '#FEF2F2'),
+            borderColor: enrollment.evaluation_status === 'passed' ? '#10B981' : '#EF4444'
+          }]}>
+            <View style={styles.evaluationStatusHeader}>
+              <IconSymbol 
+                name={enrollment.evaluation_status === 'passed' ? 'checkmark.circle.fill' : 'xmark'} 
+                size={18} 
+                color={enrollment.evaluation_status === 'passed' ? '#10B981' : '#EF4444'} 
+              />
+              <Text style={[styles.evaluationStatusTitle, { 
+                color: enrollment.evaluation_status === 'passed' ? '#10B981' : '#EF4444'
+              }]}>
+                {enrollment.evaluation_status === 'passed' ? 'PASSED' : 'FAILED'}
+              </Text>
+            </View>
+            
+            <Text style={[styles.evaluationMessage, { 
+                color: enrollment.evaluation_status === 'passed' 
+                  ? (colorScheme === 'dark' ? '#D1FAE5' : Colors[colorScheme ?? 'light'].textPrimary)
+                  : (colorScheme === 'dark' ? '#FEE2E2' : Colors[colorScheme ?? 'light'].textPrimary)
+              }]}>
+              {enrollment.evaluation_status === 'passed' 
+                ? 'Congratulations! You have successfully passed this academic term and are expected to be promoted to the next school year.'
+                : 'You have not met the academic requirements for this term and are expected to be retained in the current grade level for the next school year.'
+              }
+            </Text>
+            
+            {enrollment.evaluation_notes && (
+              <View style={styles.evaluationNotesContainer}>
+                <Text style={[styles.evaluationNotesLabel, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>
+                  Additional Notes:
+                </Text>
+                <Text style={[styles.evaluationNotes, { 
+                  color: enrollment.evaluation_status === 'passed' 
+                    ? (colorScheme === 'dark' ? '#A7F3D0' : Colors[colorScheme ?? 'light'].textPrimary)
+                    : (colorScheme === 'dark' ? '#FECACA' : Colors[colorScheme ?? 'light'].textPrimary)
+                }]}>
+                  {enrollment.evaluation_notes}
+                </Text>
+              </View>
+            )}
+          </View>
+        </View>
+      )}
+
+      {/* Enrollment Confirmation */}
+      {(enrollment.status === 'pending_confirmation' || enrollment.status === 'not_enrolled') && (
         <View style={[styles.confirmationSection, { 
-          backgroundColor: Colors[colorScheme ?? 'light'].sectionBackground,
-          borderColor: Colors[colorScheme ?? 'light'].cardBorder 
+          backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].sectionBackground,
+          borderColor: colorScheme === 'dark' ? '#4A5F8B' : Colors[colorScheme ?? 'light'].cardBorder 
         }]}>
           <View style={styles.confirmationHeader}>
-            <View style={styles.confirmationTitleContainer}>
-              <IconSymbol name="doc.text.fill" size={18} color={Colors[colorScheme ?? 'light'].tint} />
-              <Text style={[styles.confirmationTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Enrollment Confirmation Required</Text>
-            </View>
-            <Text style={[styles.confirmationSubtitle, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>
-              Please confirm your enrollment for {enrollment.term} to complete your registration.
-            </Text>
+            <IconSymbol name="doc.text.fill" size={16} color={Colors[colorScheme ?? 'light'].tint} />
+            <Text style={[styles.confirmationTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Enrollment Confirmation Required</Text>
           </View>
+          
+          <Text style={[styles.confirmationSubtitle, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>
+            Please confirm your enrollment for {enrollment.term} to complete your registration.
+          </Text>
           
           <TouchableOpacity 
             style={[styles.confirmButton, confirming && styles.confirmButtonDisabled]} 
@@ -145,17 +213,10 @@ export default function StudentInfoCard({ student, enrollment, onConfirmEnrollme
             activeOpacity={0.8}
             disabled={confirming}
           >
-            <View style={styles.confirmButtonContent}>
-              {confirming && <IconSymbol name="arrow.clockwise" size={16} color="#FFFFFF" />}
-              <Text style={styles.confirmButtonText}>
-                {confirming ? 'Confirming Enrollment...' : 'Confirm My Enrollment'}
-              </Text>
-            </View>
+            <Text style={styles.confirmButtonText}>
+              {confirming ? 'Confirming...' : 'Confirm Enrollment'}
+            </Text>
           </TouchableOpacity>
-          
-          <Text style={[styles.confirmationNote, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>
-            This action will officially enroll you for the current academic term.
-          </Text>
         </View>
       )}
     </View>
@@ -166,66 +227,43 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: '#ffffff',
     borderRadius: 12,
-    padding: 20,
+    padding: 16,
     marginBottom: 16,
     borderWidth: 1,
     borderColor: '#E5E7EB',
   },
-  // New Professional Welcome Container Styles
-  welcomeContainer: {
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 20,
+  // Welcome Section
+  welcomeSection: {
+    marginBottom: 16,
+    borderRadius: 12,
+    padding: 16,
     borderWidth: 1,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 3,
   },
   welcomeHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   welcomeIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: '#199BCF',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 16,
-    shadowColor: '#199BCF',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 2,
+    marginRight: 12,
   },
   welcomeTextContainer: {
     flex: 1,
   },
   welcomeText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '500',
     marginBottom: 2,
-    letterSpacing: 0.5,
   },
   studentName: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: '700',
-    letterSpacing: -0.5,
-  },
-  welcomeDivider: {
-    height: 1,
-    backgroundColor: '#E2E8F0',
-    marginBottom: 16,
   },
   quickInfo: {
     flexDirection: 'row',
@@ -236,112 +274,147 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   quickInfoLabel: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
-    marginBottom: 4,
-    letterSpacing: 0.5,
+    marginBottom: 3,
     textTransform: 'uppercase',
   },
   quickInfoValue: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
   },
   statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 16,
     alignSelf: 'flex-start',
   },
   statusText: {
     color: '#ffffff',
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
-    letterSpacing: 0.5,
   },
-  // Detailed Information Section Styles
-  detailedInfoContainer: {
-    marginBottom: 20,
+  // Information Section
+  infoSection: {
+    marginBottom: 16,
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
   },
-  detailedInfoTitle: {
+  infoSectionTitle: {
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 12,
-    letterSpacing: -0.2,
   },
-  detailedInfoGrid: {
+  infoGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
   },
-  detailedInfoItem: {
+  infoItem: {
     width: '50%',
     marginBottom: 12,
     paddingRight: 8,
   },
-  detailedInfoLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    marginBottom: 4,
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
-  },
-  detailedInfoValue: {
-    fontSize: 15,
+  infoLabel: {
+    fontSize: 11,
     fontWeight: '500',
-    lineHeight: 20,
+    marginBottom: 3,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  infoValue: {
+    fontSize: 14,
+    fontWeight: '600',
+    lineHeight: 18,
   },
   confirmationSection: {
-    marginTop: 20,
-    padding: 20,
-    borderRadius: 12,
+    marginTop: 16,
+    padding: 16,
+    borderRadius: 10,
     borderWidth: 1,
   },
   confirmationHeader: {
-    marginBottom: 16,
-  },
-  confirmationTitleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 8,
   },
   confirmationTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1A3165',
+    fontSize: 16,
+    fontWeight: '600',
     marginLeft: 8,
   },
   confirmationSubtitle: {
-    fontSize: 14,
-    color: '#64748B',
-    lineHeight: 20,
+    fontSize: 13,
+    lineHeight: 18,
+    marginBottom: 12,
   },
   confirmButton: {
     backgroundColor: '#199BCF',
-    borderRadius: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#199BCF',
-  },
-  confirmButtonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
   },
   confirmButtonText: {
     color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  confirmButtonDisabled: {
+    backgroundColor: '#94A3B8',
+  },
+  // Evaluation Section
+  evaluationSection: {
+    marginTop: 16,
+    padding: 16,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  evaluationHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  evaluationTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  evaluationStatusCard: {
+    borderRadius: 8,
+    padding: 12,
+    borderWidth: 1,
+  },
+  evaluationStatusHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  evaluationStatusTitle: {
     fontSize: 16,
     fontWeight: '700',
     marginLeft: 8,
   },
-  confirmButtonDisabled: {
-    backgroundColor: '#94A3B8',
-    shadowOpacity: 0.1,
+  evaluationMessage: {
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '500',
   },
-  confirmationNote: {
+  evaluationNotesContainer: {
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0, 0, 0, 0.1)',
+  },
+  evaluationNotesLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    marginBottom: 3,
+    textTransform: 'uppercase',
+  },
+  evaluationNotes: {
     fontSize: 12,
-    color: '#64748B',
-    textAlign: 'center',
+    lineHeight: 16,
     fontStyle: 'italic',
   },
 });

@@ -2,6 +2,8 @@ import * as SecureStore from 'expo-secure-store';
 
 // Configuration
 const BASE_URL = 'http://192.168.100.10:8888'; // Update this to match your setup
+// const BASE_URL = 'http://192.168.210.103:8888'; // Update this to match your setup
+
 
 // Types for our API responses
 export interface User {
@@ -42,6 +44,8 @@ export interface Enrollment {
   status: string;
   term: string | null;
   confirmed_at: string | null;
+  evaluation_status?: 'passed' | 'failed' | null;
+  evaluation_notes?: string | null;
 }
 
 export interface NewsItem {

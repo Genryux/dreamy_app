@@ -32,12 +32,19 @@ interface Invoice {
   payment_status: string;
   has_payment_plan: boolean;
   payment_mode: string | null; // 'flexible', 'installment', 'full', or null
+  payments?: Array<{
+    id: number;
+    amount: number;
+    total_discount: number;
+    payment_date: string;
+  }>;
   payment_plan?: {
     id: number;
     down_payment_amount: number;
     monthly_amount: number;
     first_month_amount: number;
     installment_months: number;
+    total_discount?: number;
     schedules: Array<{
       installment_number: number;
       description: string;
@@ -205,8 +212,8 @@ export default function InvoicesTab({ invoices = [], loading = false }: Invoices
     <View key={invoice.id} style={styles.invoiceContainer}>
       {/* Invoice Details Container */}
       <View style={[styles.invoiceCard, { 
-        backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-        borderColor: Colors[colorScheme ?? 'light'].cardBorder 
+        backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+        borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder 
       }]}>
         <View style={styles.invoiceHeader}>
           <View style={styles.invoiceTitleContainer}>
@@ -219,7 +226,7 @@ export default function InvoicesTab({ invoices = [], loading = false }: Invoices
         </View>
         
         <View style={styles.invoiceDetails}>
-          <View style={[styles.detailRow, { borderBottomColor: Colors[colorScheme ?? 'light'].cardBorder }]}>
+          <View style={[styles.detailRow, { borderBottomColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder }]}>
             <View style={styles.detailLabelContainer}>
               <IconSymbol name="dollarsign.circle.fill" size={14} color="#199BCF" />
               <Text style={[styles.detailLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Total Amount:</Text>
@@ -227,7 +234,7 @@ export default function InvoicesTab({ invoices = [], loading = false }: Invoices
             <Text style={[styles.detailValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>₱{Number(invoice.total_amount).toLocaleString()}</Text>
           </View>
           
-          <View style={[styles.detailRow, { borderBottomColor: Colors[colorScheme ?? 'light'].cardBorder }]}>
+          <View style={[styles.detailRow, { borderBottomColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder }]}>
             <View style={styles.detailLabelContainer}>
               <IconSymbol name="checkmark.circle.fill" size={14} color="#199BCF" />
               <Text style={[styles.detailLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Paid Amount:</Text>
@@ -235,8 +242,33 @@ export default function InvoicesTab({ invoices = [], loading = false }: Invoices
             <Text style={[styles.detailValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>₱{Number(invoice.paid_amount).toLocaleString()}</Text>
           </View>
           
+          {/* Total Discount - Show for paid invoices */}
+          {(() => {
+            // Calculate total discount from payment plan or individual payments
+            let totalDiscount = 0;
+            
+            if (invoice.payment_plan?.total_discount) {
+              totalDiscount = Number(invoice.payment_plan.total_discount);
+            } else if (invoice.payments && invoice.payments.length > 0) {
+              // Sum up total_discount from all payments
+              totalDiscount = invoice.payments.reduce((sum, payment) => {
+                return sum + (Number(payment.total_discount) || 0);
+              }, 0);
+            }
+            
+            return totalDiscount > 0 ? (
+              <View style={[styles.detailRow, { borderBottomColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder }]}>
+                <View style={styles.detailLabelContainer}>
+                  <IconSymbol name="percent" size={14} color="#199BCF" />
+                  <Text style={[styles.detailLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Total Discount:</Text>
+                </View>
+                <Text style={[styles.detailValue, { color: '#10B981' }]}>-₱{totalDiscount.toLocaleString()}</Text>
+              </View>
+            ) : null;
+          })()}
+          
           {invoice.balance > 0 && (
-            <View style={[styles.detailRow, { borderBottomColor: Colors[colorScheme ?? 'light'].cardBorder }]}>
+            <View style={[styles.detailRow, { borderBottomColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder }]}>
               <View style={styles.detailLabelContainer}>
                 <IconSymbol name="exclamationmark.triangle.fill" size={14} color="#199BCF" />
                 <Text style={[styles.detailLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Balance:</Text>
@@ -247,7 +279,7 @@ export default function InvoicesTab({ invoices = [], loading = false }: Invoices
         </View>
 
         {invoice.items && invoice.items.length > 0 && (
-          <View style={[styles.itemsSection, { borderTopColor: Colors[colorScheme ?? 'light'].cardBorder }]}>
+          <View style={[styles.itemsSection, { borderTopColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder }]}>
             <View style={styles.itemsTitleContainer}>
               <IconSymbol name="list.bullet" size={16} color="#199BCF" />
               <Text style={[styles.itemsTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Invoice Items:</Text>
@@ -262,7 +294,7 @@ export default function InvoicesTab({ invoices = [], loading = false }: Invoices
         )}
 
         {(invoice.payment_status === 'unpaid' && !invoice.has_payment_plan && invoice.balance > 0 && (invoice.payment_mode === 'flexible' || !invoice.payment_mode)) && (
-          <View style={[styles.paymentPlanSection, { borderTopColor: Colors[colorScheme ?? 'light'].cardBorder }]}>
+          <View style={[styles.paymentPlanSection, { borderTopColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder }]}>
             <Text style={[styles.paymentPlanTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Choose Payment Option:</Text>
             
             <TouchableOpacity
@@ -304,8 +336,8 @@ export default function InvoicesTab({ invoices = [], loading = false }: Invoices
       {/* Payment Plan Container - FIXED CONDITION */}
       {((invoice.has_payment_plan === true || invoice.has_payment_plan === 1) && invoice.payment_plan && invoice.payment_plan.id) && (
         <View style={[styles.paymentPlanCard, { 
-          backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-          borderColor: Colors[colorScheme ?? 'light'].cardBorder 
+          backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+          borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder 
         }]}>
           <View style={styles.planHeader}>
             <IconSymbol name="calendar" size={18} color="#199BCF" />
@@ -333,8 +365,29 @@ export default function InvoicesTab({ invoices = [], loading = false }: Invoices
                       <Text style={[styles.planLabel, { color: '#374151' }]}>Down Payment</Text>
                       <Text style={[styles.planValue, { color: '#199BCF' }]}>
                         ₱{(() => {
-                          const amount = Number(invoice.payment_plan?.down_payment_amount || 0);
-                          return isNaN(amount) ? '0' : amount.toLocaleString();
+                          // Check if student has made a down payment
+                          const downPaymentSchedule = invoice.payment_plan?.schedules?.find(
+                            schedule => schedule.installment_number === 0
+                          );
+                          
+                          if (downPaymentSchedule && downPaymentSchedule.amount_paid > 0) {
+                            // Show actual amount paid by student
+                            return downPaymentSchedule.amount_paid.toLocaleString();
+                          } else {
+                            // Show admin-set down payment amount
+                            const amount = Number(invoice.payment_plan?.down_payment_amount || 0);
+                            return isNaN(amount) ? '0' : amount.toLocaleString();
+                          }
+                        })()}
+                      </Text>
+                      <Text style={[styles.planSubtext, { color: '#6B7280', fontSize: 10, marginTop: 2 }]}>
+                        {(() => {
+                          const downPaymentSchedule = invoice.payment_plan?.schedules?.find(
+                            schedule => schedule.installment_number === 0
+                          );
+                          return downPaymentSchedule && downPaymentSchedule.amount_paid > 0 
+                            ? 'Paid by student' 
+                            : 'Required amount';
                         })()}
                       </Text>
                     </View>
@@ -418,24 +471,24 @@ export default function InvoicesTab({ invoices = [], loading = false }: Invoices
       )}
 
       {/* One-Time Payment Confirmation Container */}
-      {(invoice.payment_mode === 'full' && !invoice.has_payment_plan) && (
-        <View style={[styles.paymentPlanCard, { 
-          backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-          borderColor: Colors[colorScheme ?? 'light'].cardBorder 
-        }]}>
-          <View style={styles.planHeader}>
-            <IconSymbol name="dollarsign.circle.fill" size={18} color="#199BCF" />
-            <Text style={[styles.planHeaderText, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>
-              One-Time Payment Selected
-            </Text>
-          </View>
-          
-          <View style={[styles.oneTimePaymentSummary, { 
-            backgroundColor: Colors[colorScheme ?? 'light'].sectionBackground,
-            borderColor: '#199BCF',
-            borderWidth: 1,
-            borderRadius: 8,
+        {(invoice.payment_mode === 'full' && !invoice.has_payment_plan) && (
+          <View style={[styles.paymentPlanCard, { 
+            backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+            borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder 
           }]}>
+            <View style={styles.planHeader}>
+              <IconSymbol name="dollarsign.circle.fill" size={16} color="#199BCF" />
+              <Text style={[styles.planHeaderText, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>
+                One-Time Payment Selected
+              </Text>
+            </View>
+            
+            <View style={[styles.oneTimePaymentSummary, { 
+              backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].sectionBackground,
+              borderColor: '#199BCF',
+              borderWidth: 1,
+              borderRadius: 8,
+            }]}>
             <View style={styles.oneTimePaymentRow}>
               <View style={styles.oneTimePaymentLeft}>
                 <Text style={[styles.oneTimePaymentLabel, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>Payment Mode</Text>
@@ -487,12 +540,11 @@ export default function InvoicesTab({ invoices = [], loading = false }: Invoices
     >
       {/* Financial Summary */}
       <View style={[styles.summaryCard, { 
-        backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-        borderColor: Colors[colorScheme ?? 'light'].cardBorder 
+        backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+        borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder 
       }]}>
         <View style={styles.summaryHeader}>
           <View style={styles.summaryTitleContainer}>
-            <IconSymbol name="dollarsign.circle.fill" size={20} color="#199BCF" />
             <Text style={[styles.summaryTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Financial Summary</Text>
           </View>
           <Text style={[styles.summarySubtitle, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>{academicTerm}</Text>
@@ -524,19 +576,21 @@ export default function InvoicesTab({ invoices = [], loading = false }: Invoices
       <View style={styles.invoicesHeader}>
         <View style={styles.invoicesTitleRow}>
           <View style={styles.invoicesTitleContainer}>
-            <IconSymbol name="doc.text.fill" size={20} color="#199BCF" />
             <Text style={[styles.invoicesTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Your Invoices</Text>
           </View>
           {availableTerms && availableTerms.length > 1 && (
             <View style={styles.termSelector}>
               <TouchableOpacity 
-                style={styles.termSelectorButton}
+                style={[styles.termSelectorButton, {
+                  backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : '#F3F4F6',
+                  borderColor: colorScheme === 'dark' ? '#4A5F8B' : '#E5E7EB'
+                }]}
                 onPress={() => setShowTermModal(true)}
               >
-                <Text style={styles.termSelectorText}>
+                <Text style={[styles.termSelectorText, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>
                   {getCurrentTermName()}
                 </Text>
-                <IconSymbol name="chevron.down" size={12} color="#6B7280" />
+                <IconSymbol name="chevron.down" size={12} color={Colors[colorScheme ?? 'light'].textSecondary} />
               </TouchableOpacity>
             </View>
           )}
@@ -550,11 +604,11 @@ export default function InvoicesTab({ invoices = [], loading = false }: Invoices
         </View>
       ) : (
         <View style={[styles.emptyState, { 
-          backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-          borderColor: Colors[colorScheme ?? 'light'].cardBorder 
+          backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+          borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder 
         }]}>
           <View style={styles.emptyIconContainer}>
-            <IconSymbol name="doc.text.fill" size={48} color="#199BCF" />
+            <IconSymbol name="doc.text.fill" size={40} color="#199BCF" />
           </View>
           <Text style={[styles.emptyTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>No Invoices Found</Text>
           <Text style={[styles.emptyText, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>
@@ -572,16 +626,16 @@ export default function InvoicesTab({ invoices = [], loading = false }: Invoices
       >
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, styles.paymentPlanModal, { 
-            backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-            borderColor: Colors[colorScheme ?? 'light'].cardBorder 
+            backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+            borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder 
           }]}>
-            <View style={[styles.modalHeader, { borderBottomColor: Colors[colorScheme ?? 'light'].cardBorder }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder }]}>
               <Text style={[styles.modalTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Monthly Installment Plan</Text>
               <TouchableOpacity 
                 style={styles.modalCloseButton}
                 onPress={handleCancelPaymentPlan}
               >
-                <IconSymbol name="xmark" size={18} color={Colors[colorScheme ?? 'light'].textSecondary} />
+                <IconSymbol name="xmark" size={16} color={Colors[colorScheme ?? 'light'].textSecondary} />
               </TouchableOpacity>
             </View>
             
@@ -592,7 +646,7 @@ export default function InvoicesTab({ invoices = [], loading = false }: Invoices
                     Payment Breakdown
                   </Text>
                   
-                  <View style={[styles.breakdownSummary, { backgroundColor: Colors[colorScheme ?? 'light'].sectionBackground }]}>
+                  <View style={[styles.breakdownSummary, { backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].sectionBackground }]}>
                     <View style={styles.breakdownRow}>
                       <Text style={[styles.breakdownLabel, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>Total Amount</Text>
                       <Text style={[styles.breakdownValue, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>₱{Number(paymentPlanPreview.plan.total_amount || 0).toLocaleString()}</Text>
@@ -611,7 +665,7 @@ export default function InvoicesTab({ invoices = [], loading = false }: Invoices
                   <View style={[styles.warningContainer, { backgroundColor: '#E3F2FD', borderColor: '#2196F3' }]}>
                     <View style={styles.warningContent}>
                       <Text style={styles.warningText}>
-                        💡 Please note: These computations may vary depending on your actual down payment. If you fall short with the down payment, the remaining amount will be added to your first monthly billing.
+                        Please note: These computations may vary depending on your actual down payment. If you fall short with the down payment, the remaining amount will be added to your first monthly billing.
                       </Text>
                     </View>
                   </View>
@@ -674,16 +728,16 @@ export default function InvoicesTab({ invoices = [], loading = false }: Invoices
       >
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { 
-            backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-            borderColor: Colors[colorScheme ?? 'light'].cardBorder 
+            backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+            borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder 
           }]}>
-            <View style={[styles.modalHeader, { borderBottomColor: Colors[colorScheme ?? 'light'].cardBorder }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder }]}>
               <Text style={[styles.modalTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Select Academic Term</Text>
               <TouchableOpacity 
                 style={styles.modalCloseButton}
                 onPress={() => setShowTermModal(false)}
               >
-                <IconSymbol name="xmark" size={18} color={Colors[colorScheme ?? 'light'].textSecondary} />
+                <IconSymbol name="xmark" size={16} color={Colors[colorScheme ?? 'light'].textSecondary} />
               </TouchableOpacity>
             </View>
             
@@ -691,8 +745,8 @@ export default function InvoicesTab({ invoices = [], loading = false }: Invoices
               <TouchableOpacity
                 style={[
                   styles.termOption,
-                  { borderBottomColor: Colors[colorScheme ?? 'light'].cardBorder },
-                  !selectedTermId && { backgroundColor: Colors[colorScheme ?? 'light'].sectionBackground }
+                  { borderBottomColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder },
+                  !selectedTermId && { backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].sectionBackground }
                 ]}
                 onPress={() => handleTermSelect(undefined)}
               >
@@ -719,8 +773,8 @@ export default function InvoicesTab({ invoices = [], loading = false }: Invoices
                   key={term.id}
                   style={[
                     styles.termOption,
-                    { borderBottomColor: Colors[colorScheme ?? 'light'].cardBorder },
-                    selectedTermId === term.id && { backgroundColor: Colors[colorScheme ?? 'light'].sectionBackground }
+                    { borderBottomColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder },
+                    selectedTermId === term.id && { backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].sectionBackground }
                   ]}
                   onPress={() => handleTermSelect(term.id)}
                 >
@@ -777,31 +831,27 @@ const styles = StyleSheet.create({
     paddingBottom: 100, // Extra padding for floating tab bar
   },
   summaryCard: {
-    backgroundColor: '#ffffff',
     borderRadius: 12,
-    padding: 20,
+    padding: 16,
     marginTop: 8,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
   },
   summaryHeader: {
-    marginBottom: 16,
+    marginBottom: 12,
   },
   summaryTitleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 3,
   },
   summaryTitle: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: '700',
-    color: '#1A3165',
-    marginLeft: 8,
+    marginLeft: 6,
   },
   summarySubtitle: {
-    fontSize: 14,
-    color: '#6B7280',
+    fontSize: 13,
   },
   summaryGrid: {
     flexDirection: 'row',
@@ -810,17 +860,15 @@ const styles = StyleSheet.create({
   },
   summaryItem: {
     width: '48%',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   summaryLabel: {
-    fontSize: 12,
-    color: '#6B7280',
-    marginBottom: 4,
+    fontSize: 11,
+    marginBottom: 3,
     fontWeight: '500',
   },
   summaryValue: {
-    fontSize: 16,
-    color: '#1A3165',
+    fontSize: 14,
     fontWeight: '700',
   },
   balanceText: {
@@ -847,21 +895,18 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   termSelector: {
-    marginLeft: 12,
+    marginLeft: 10,
   },
   termSelectorButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F3F4F6',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 6,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
   },
   termSelectorText: {
-    fontSize: 12,
-    color: '#1A3165',
+    fontSize: 11,
     fontWeight: '600',
     marginRight: 4,
   },
@@ -873,51 +918,45 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   invoiceCard: {
-    backgroundColor: '#ffffff',
     borderRadius: 12,
-    padding: 20,
+    padding: 16,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
   },
   paymentPlanCard: {
-    backgroundColor: '#ffffff',
     borderRadius: 12,
-    padding: 20,
+    padding: 16,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
   },
   invoiceHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 16,
+    marginBottom: 14,
   },
   invoiceTitleContainer: {
     flex: 1,
   },
   invoiceNumber: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
-    color: '#1A3165',
-    marginBottom: 4,
+    marginBottom: 3,
   },
   invoiceDate: {
-    fontSize: 14,
-    color: '#6B7280',
+    fontSize: 13,
     fontWeight: '500',
   },
   statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 6,
   },
   statusText: {
     color: '#ffffff',
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
   },
   invoiceDetails: {
-    gap: 12,
+    gap: 0,
   },
   detailRow: {
     flexDirection: 'row',
@@ -932,48 +971,45 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   detailLabel: {
-    fontSize: 14,
-    color: '#6B7280',
-    fontWeight: '500',
+    fontSize: 12,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
     marginLeft: 6,
   },
   detailValue: {
-    fontSize: 14,
-    color: '#1A3165',
+    fontSize: 13,
     fontWeight: '600',
     flex: 2,
     textAlign: 'right',
   },
   itemsSection: {
-    marginTop: 8,
-    paddingTop: 16,
+    marginTop: 12,
+    paddingTop: 12,
     borderTopWidth: 1,
   },
   itemsTitleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   itemsTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
-    color: '#1A3165',
     marginLeft: 8,
   },
   itemRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 6,
+    paddingVertical: 5,
   },
   itemName: {
-    fontSize: 14,
-    color: '#6B7280',
+    fontSize: 13,
     flex: 1,
   },
   itemAmount: {
-    fontSize: 14,
-    color: '#1A3165',
+    fontSize: 13,
     fontWeight: '600',
   },
   loadingContainer: {
@@ -1009,39 +1045,34 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   emptyState: {
-    backgroundColor: '#ffffff',
     borderRadius: 12,
-    padding: 32,
+    padding: 24,
     alignItems: 'center',
     marginTop: 12,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
   },
   emptyIconContainer: {
-    marginBottom: 16,
+    marginBottom: 12,
   },
   emptyTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
-    color: '#1A3165',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   emptyText: {
-    fontSize: 14,
-    color: '#6B7280',
+    fontSize: 13,
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 18,
   },
   // Modal styles
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
   },
   modalContent: {
-    backgroundColor: '#ffffff',
     borderRadius: 12,
     width: '100%',
     maxHeight: '70%',
@@ -1051,20 +1082,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
+    padding: 16,
     borderBottomWidth: 1,
   },
   modalTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
-    color: '#1A3165',
   },
   modalCloseButton: {
     padding: 4,
   },
   modalCloseText: {
-    fontSize: 18,
-    color: '#6B7280',
+    fontSize: 16,
     fontWeight: '600',
   },
   modalBody: {
@@ -1075,7 +1104,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   termOption: {
-    padding: 16,
+    padding: 14,
     borderBottomWidth: 1,
   },
   termOptionContent: {
@@ -1090,28 +1119,27 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   termOptionText: {
-    fontSize: 16,
-    color: '#1A3165',
+    fontSize: 15,
     fontWeight: '500',
-    marginBottom: 4,
+    marginBottom: 3,
   },
   termOptionTextSelected: {
     color: '#199BCF',
     fontWeight: '700',
   },
   termOptionCheck: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#199BCF',
     fontWeight: '700',
   },
   unpaidIndicator: {
     backgroundColor: '#FEF2F2',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 4,
     borderWidth: 1,
     borderColor: '#FECACA',
-    marginTop: 4,
+    marginTop: 3,
   },
   unpaidIndicatorContainer: {
     flexDirection: 'row',
@@ -1119,32 +1147,31 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   unpaidIndicatorText: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#DC2626',
     fontWeight: '600',
     marginLeft: 4,
   },
   unpaidAmountText: {
-    fontSize: 11,
+    fontSize: 10,
     color: '#B91C1C',
     fontWeight: '700',
   },
   // Payment Plan Selection Styles
   paymentPlanSection: {
-    marginTop: 16,
-    paddingTop: 16,
+    marginTop: 12,
+    paddingTop: 12,
     borderTopWidth: 1,
-    gap: 12,
+    gap: 10,
   },
   paymentPlanTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
-    color: '#1A3165',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   paymentButton: {
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 10,
+    padding: 14,
     borderWidth: 1,
   },
   oneTimeButton: {
@@ -1158,19 +1185,19 @@ const styles = StyleSheet.create({
   buttonContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
   },
   buttonTextContainer: {
     flex: 1,
   },
   buttonTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
     color: '#FFFFFF',
     marginBottom: 2,
   },
   buttonSubtitle: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#E0F2FE',
   },
   installmentButtonText: {
@@ -1188,42 +1215,44 @@ const styles = StyleSheet.create({
   planHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
-    gap: 8,
+    marginBottom: 10,
+    gap: 6,
   },
   planHeaderText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
-    color: '#1A3165',
   },
   planSummary: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 16,
+    gap: 10,
+    marginBottom: 12,
   },
   planSummaryItem: {
     flex: 1,
-    padding: 12,
+    padding: 10,
     borderRadius: 8,
   },
   planLabel: {
-    fontSize: 12,
-    color: '#6B7280',
-    marginBottom: 4,
+    fontSize: 11,
+    marginBottom: 3,
   },
   planValue: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
-    color: '#1A3165',
+  },
+  planSubtext: {
+    fontSize: 9,
+    fontWeight: '500',
+    marginTop: 2,
   },
   scheduleList: {
-    gap: 8,
+    gap: 6,
   },
   scheduleItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 6,
     borderBottomWidth: 1,
   },
   scheduleLeft: {
@@ -1262,49 +1291,44 @@ const styles = StyleSheet.create({
     maxHeight: '80%',
   },
   planBreakdown: {
-    padding: 16,
+    padding: 14,
   },
   breakdownTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
-    color: '#1A3165',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   breakdownSummary: {
-    backgroundColor: '#F9FAFB',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
+    borderRadius: 10,
+    padding: 14,
+    marginBottom: 16,
   },
   breakdownRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   remainingRow: {
     marginBottom: 0,
-    paddingTop: 12,
+    paddingTop: 10,
     borderTopWidth: 1,
     borderTopColor: '#E5E7EB',
   },
   breakdownLabel: {
-    fontSize: 14,
-    color: '#6B7280',
+    fontSize: 13,
   },
   breakdownValue: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
-    color: '#1A3165',
   },
   downPaymentValue: {
     color: '#199BCF',
   },
   scheduleTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
-    color: '#1A3165',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   scheduleItemBreakdown: {
     flexDirection: 'row',
@@ -1363,11 +1387,11 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   planNote: {
-    fontSize: 12,
-    color: '#6B7280',
+    fontSize: 11,
     textAlign: 'center',
-    marginTop: 12,
+    marginTop: 10,
     fontStyle: 'italic',
+    lineHeight: 16,
   },
   // Current Due Payment Highlight Styles
   currentDueCard: {
@@ -1433,8 +1457,8 @@ const styles = StyleSheet.create({
   },
   // One-Time Payment Styles
   oneTimePaymentSummary: {
-    padding: 16,
-    marginBottom: 12,
+    padding: 12,
+    marginBottom: 10,
   },
   oneTimePaymentRow: {
     flexDirection: 'row',
@@ -1443,19 +1467,19 @@ const styles = StyleSheet.create({
   },
   oneTimePaymentLeft: {
     flex: 1,
-    marginRight: 16,
+    marginRight: 12,
   },
   oneTimePaymentRight: {
     flex: 1,
     alignItems: 'flex-end',
   },
   oneTimePaymentLabel: {
-    fontSize: 12,
-    marginBottom: 4,
+    fontSize: 11,
+    marginBottom: 3,
     fontWeight: '500',
   },
   oneTimePaymentValue: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '700',
   },
   // Warning Message Styles

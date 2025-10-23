@@ -8,6 +8,115 @@ import React from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+// Helper functions for student status display
+const getStatusDisplayText = (status: string | undefined): string => {
+  if (!status || status === 'unknown') return 'Unknown';
+  
+  // Normalize the status by converting to lowercase and replacing spaces with underscores
+  const normalizedStatus = status.toLowerCase().replace(/\s+/g, '_');
+  
+  switch (normalizedStatus) {
+    case 'officially_enrolled':
+      return 'Officially Enrolled';
+    case 'graduated':
+      return 'Graduated';
+    case 'dropped':
+      return 'Dropped';
+    case 'transferred':
+      return 'Transferred';
+    default:
+      return status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' ');
+  }
+};
+
+const getStatusIcon = (status: string | undefined): string => {
+  if (!status || status === 'unknown') return 'questionmark.circle';
+  
+  // Normalize the status by converting to lowercase and replacing spaces with underscores
+  const normalizedStatus = status.toLowerCase().replace(/\s+/g, '_');
+  
+  switch (normalizedStatus) {
+    case 'officially_enrolled':
+      return 'checkmark.circle.fill';
+    case 'graduated':
+      return 'graduationcap.fill';
+    case 'dropped':
+      return 'xmark';
+    case 'transferred':
+      return 'chevron.right';
+    default:
+      return 'questionmark.circle';
+  }
+};
+
+const getStatusBadgeColor = (status: string | undefined, colorScheme: string | null) => {
+  if (!status || status === 'unknown') {
+    return {
+      background: colorScheme === 'dark' ? '#374151' : '#F3F4F6',
+      border: '#9CA3AF',
+      color: '#6B7280'
+    };
+  }
+  
+  // Normalize the status by converting to lowercase and replacing spaces with underscores
+  const normalizedStatus = status.toLowerCase().replace(/\s+/g, '_');
+  
+  switch (normalizedStatus) {
+    case 'officially_enrolled':
+      return {
+        background: colorScheme === 'dark' ? '#064E3B' : '#F0FDF4',
+        border: '#10B981',
+        color: '#10B981'
+      };
+    case 'graduated':
+      return {
+        background: colorScheme === 'dark' ? '#1E3A8A' : '#EFF6FF',
+        border: '#3B82F6',
+        color: '#3B82F6'
+      };
+    case 'dropped':
+      return {
+        background: colorScheme === 'dark' ? '#7F1D1D' : '#FEF2F2',
+        border: '#EF4444',
+        color: '#EF4444'
+      };
+    case 'transferred':
+      return {
+        background: colorScheme === 'dark' ? '#7C2D12' : '#FEF3C7',
+        border: '#F59E0B',
+        color: '#F59E0B'
+      };
+    default:
+      return {
+        background: colorScheme === 'dark' ? '#374151' : '#F3F4F6',
+        border: '#9CA3AF',
+        color: '#6B7280'
+      };
+  }
+};
+
+const getStatusAvatarColor = (status: string | undefined) => {
+  if (!status || status === 'unknown') {
+    return '#9CA3AF'; // Gray for unknown status
+  }
+  
+  // Normalize the status by converting to lowercase and replacing spaces with underscores
+  const normalizedStatus = status.toLowerCase().replace(/\s+/g, '_');
+  
+  switch (normalizedStatus) {
+    case 'officially_enrolled':
+      return '#10B981'; // Green for enrolled
+    case 'graduated':
+      return '#3B82F6'; // Blue for graduated
+    case 'dropped':
+      return '#EF4444'; // Red for dropped
+    case 'transferred':
+      return '#F59E0B'; // Orange for transferred
+    default:
+      return '#9CA3AF'; // Gray for unknown
+  }
+};
+
 export default function ProfileScreen() {
   const { data: dashboardData, loading, error, refresh } = useDashboard();
   const colorScheme = useColorScheme();
@@ -53,7 +162,7 @@ export default function ProfileScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colorScheme === 'dark' ? '#1A3165' : Colors[colorScheme ?? 'light'].background }]}>
         <View style={styles.loadingContainer}>
           <Text style={[styles.loadingText, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>Loading profile...</Text>
         </View>
@@ -63,7 +172,7 @@ export default function ProfileScreen() {
 
   if (error) {
     return (
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colorScheme === 'dark' ? '#1A3165' : Colors[colorScheme ?? 'light'].background }]}>
         <View style={styles.errorContainer}>
           <View style={styles.errorIconContainer}>
             <IconSymbol name="exclamationmark.triangle" size={48} color="#EF4444" />
@@ -102,17 +211,28 @@ export default function ProfileScreen() {
   const displayStudent = student || fallbackStudent;
   const displayEnrollment = enrollment || fallbackEnrollment;
 
+  // Debug logging
+  console.log('Profile Debug - Student:', displayStudent);
+  console.log('Profile Debug - Student Status:', displayStudent?.status);
+
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
-      <View style={{ flex: 1, backgroundColor: Colors[colorScheme ?? 'light'].background }}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colorScheme === 'dark' ? '#1A3165' : Colors[colorScheme ?? 'light'].background }]}>
+      <View style={{ flex: 1, backgroundColor: colorScheme === 'dark' ? '#1A3165' : Colors[colorScheme ?? 'light'].background }}>
         {/* Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { alignItems: 'center' }]}>
           <View style={styles.headerLeft}>
             <Text style={[styles.headerTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Profile</Text>
             <Text style={[styles.headerSubtitle, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>Manage your personal information</Text>
           </View>
-          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <IconSymbol name="arrow.right.square" size={20} color="#EF4444" />
+          <TouchableOpacity 
+            style={[styles.logoutButton, {
+              backgroundColor: colorScheme === 'dark' ? '#374151' : '#F3F4F6',
+              borderColor: Colors[colorScheme ?? 'light'].cardBorder
+            }]} 
+            onPress={handleLogout}
+          >
+            <IconSymbol name="arrow.right.square" size={16} color={Colors[colorScheme ?? 'light'].textSecondary} />
+            <Text style={[styles.logoutText, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>Logout</Text>
           </TouchableOpacity>
         </View>
 
@@ -122,53 +242,82 @@ export default function ProfileScreen() {
           contentContainerStyle={styles.contentContainer}
           showsVerticalScrollIndicator={false}
         >
-          {/* Profile Header */}
+          {/* Profile Header - Redesigned */}
           <View style={[styles.profileHeader, { 
-            backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-            borderColor: Colors[colorScheme ?? 'light'].cardBorder 
+            backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+            borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder 
           }]}>
-          {/* Avatar Placeholder */}
-          <View style={styles.avatarContainer}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>
-                {displayStudent?.name ? 
-                  displayStudent.name.split(' ').map(name => name.charAt(0).toUpperCase()).join('').substring(0, 2) :
-                  'ST'
-                }
-              </Text>
-            </View>
-          </View>
-
-          {/* Student Information */}
-          <View style={styles.studentInfo}>
-            <Text style={[styles.studentName, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>
-              {displayStudent?.name || 'Student Name'}
-            </Text>
-            <Text style={[styles.studentLRN, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>
-              LRN: {displayStudent?.lrn || 'Not assigned'}
-            </Text>
-            <View style={styles.statusContainer}>
-              <View style={[
-                styles.statusBadge,
-                displayEnrollment?.status === 'confirmed' ? styles.statusConfirmed : styles.statusPending
-              ]}>
-                <Text style={[
-                  styles.statusText,
-                  displayEnrollment?.status === 'confirmed' ? styles.statusTextConfirmed : styles.statusTextPending
-                ]}>
-                  {displayEnrollment?.status === 'confirmed' ? '✓ Enrolled' : '⏳ Pending'}
+            {/* Top Section with Avatar and Basic Info */}
+            <View style={styles.profileTopSection}>
+              <View style={styles.avatarContainer}>
+                <View style={[styles.avatar, { 
+                  backgroundColor: '#199BCF',
+                  borderColor: Colors[colorScheme ?? 'light'].cardBorder 
+                }]}>
+                  <Text style={styles.avatarText}>
+                    {displayStudent?.name ? 
+                      displayStudent.name.split(' ').map(name => name.charAt(0).toUpperCase()).join('').substring(0, 2) :
+                      'ST'
+                    }
+                  </Text>
+                </View>
+                <View style={[styles.statusIndicator, {
+                  backgroundColor: getStatusAvatarColor(displayStudent?.status),
+                  borderColor: Colors[colorScheme ?? 'light'].cardBackground
+                }]} />
+              </View>
+              
+              <View style={styles.profileInfo}>
+                <Text style={[styles.studentName, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>
+                  {displayStudent?.name || 'Student Name'}
                 </Text>
+                <Text style={[styles.studentLRN, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>
+                  LRN: {displayStudent?.lrn || 'Not assigned'}
+                </Text>
+                <View style={styles.enrollmentStatus}>
+                  <View style={[styles.statusBadge, {
+                    backgroundColor: getStatusBadgeColor(displayStudent?.status || 'officially_enrolled', colorScheme).background,
+                    borderColor: getStatusBadgeColor(displayStudent?.status || 'officially_enrolled', colorScheme).border
+                  }]}>
+                    <IconSymbol 
+                      name={getStatusIcon(displayStudent?.status || 'officially_enrolled')} 
+                      size={12} 
+                      color={getStatusBadgeColor(displayStudent?.status || 'officially_enrolled', colorScheme).color} 
+                    />
+                    <Text style={[styles.statusText, {
+                      color: getStatusBadgeColor(displayStudent?.status || 'officially_enrolled', colorScheme).color
+                    }]}>
+                      {getStatusDisplayText(displayStudent?.status || 'officially_enrolled')}
+                    </Text>
+                  </View>
+                </View>
               </View>
             </View>
+
+            {/* Academic Term Info */}
+            {displayEnrollment?.term && (
+              <View style={[styles.termInfo, { 
+                backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].sectionBackground,
+                borderColor: colorScheme === 'dark' ? '#4A5F8B' : Colors[colorScheme ?? 'light'].cardBorder 
+              }]}>
+                <View style={styles.termInfoLeft}>
+                  <IconSymbol name="calendar" size={12} color={Colors[colorScheme ?? 'light'].textSecondary} />
+                  <Text style={[styles.termLabel, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>Current Term</Text>
+                </View>
+                <Text style={[styles.termValue, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>
+                  {displayEnrollment.term}
+                </Text>
+              </View>
+            )}
+
           </View>
-        </View>
 
           {/* Action Cards */}
           <View style={styles.actionCardsContainer}>
             {/* Personal Information Card */}
             <TouchableOpacity style={[styles.actionCard, { 
-              backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-              borderColor: Colors[colorScheme ?? 'light'].cardBorder 
+              backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+              borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder 
             }]} onPress={handlePersonalInfoPress}>
               <View style={styles.actionCardContent}>
                 <View style={styles.actionCardLeft}>
@@ -188,8 +337,8 @@ export default function ProfileScreen() {
 
             {/* Account Settings Card */}
             <TouchableOpacity style={[styles.actionCard, { 
-              backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-              borderColor: Colors[colorScheme ?? 'light'].cardBorder 
+              backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+              borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder 
             }]} onPress={handleAccountSettingsPress}>
               <View style={styles.actionCardContent}>
                 <View style={styles.actionCardLeft}>
@@ -207,68 +356,6 @@ export default function ProfileScreen() {
               </View>
             </TouchableOpacity>
 
-            {/* Academic Summary Card */}
-            <TouchableOpacity style={[styles.actionCard, { 
-              backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-              borderColor: Colors[colorScheme ?? 'light'].cardBorder 
-            }]}>
-              <View style={styles.actionCardContent}>
-                <View style={styles.actionCardLeft}>
-                  <View style={styles.actionCardIcon}>
-                    <IconSymbol name="chart.bar" size={20} color="#199BCF" />
-                  </View>
-                  <View style={styles.actionCardText}>
-                    <Text style={[styles.actionCardTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Academic Summary</Text>
-                    <Text style={[styles.actionCardSubtitle, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>Your academic overview</Text>
-                  </View>
-                </View>
-                <View style={styles.actionCardRight}>
-                  <Text style={[styles.actionCardArrow, { color: Colors[colorScheme ?? 'light'].textTertiary }]}>›</Text>
-                </View>
-              </View>
-            </TouchableOpacity>
-
-            {/* Documents Card */}
-            <TouchableOpacity style={[styles.actionCard, { 
-              backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-              borderColor: Colors[colorScheme ?? 'light'].cardBorder 
-            }]}>
-              <View style={styles.actionCardContent}>
-                <View style={styles.actionCardLeft}>
-                  <View style={styles.actionCardIcon}>
-                    <IconSymbol name="doc.text" size={20} color="#199BCF" />
-                  </View>
-                  <View style={styles.actionCardText}>
-                    <Text style={[styles.actionCardTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Documents</Text>
-                    <Text style={[styles.actionCardSubtitle, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>View and request documents</Text>
-                  </View>
-                </View>
-                <View style={styles.actionCardRight}>
-                  <Text style={[styles.actionCardArrow, { color: Colors[colorScheme ?? 'light'].textTertiary }]}>›</Text>
-                </View>
-              </View>
-            </TouchableOpacity>
-
-            {/* Help & Support Card */}
-            <TouchableOpacity style={[styles.actionCard, { 
-              backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-              borderColor: Colors[colorScheme ?? 'light'].cardBorder 
-            }]}>
-              <View style={styles.actionCardContent}>
-                <View style={styles.actionCardLeft}>
-                  <View style={styles.actionCardIcon}>
-                    <IconSymbol name="questionmark.circle" size={20} color="#199BCF" />
-                  </View>
-                  <View style={styles.actionCardText}>
-                    <Text style={[styles.actionCardTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Help & Support</Text>
-                    <Text style={[styles.actionCardSubtitle, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>Get help and support</Text>
-                  </View>
-                </View>
-                <View style={styles.actionCardRight}>
-                  <Text style={[styles.actionCardArrow, { color: Colors[colorScheme ?? 'light'].textTertiary }]}>›</Text>
-                </View>
-              </View>
-            </TouchableOpacity>
           </View>
         </ScrollView>
       </View>
@@ -293,7 +380,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    paddingTop: 8,
+    paddingTop: 16,
     paddingHorizontal: 20,
     paddingBottom: 16,
   },
@@ -301,21 +388,25 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   logoutButton: {
-    padding: 8,
-    borderRadius: 8,
-    backgroundColor: '#FEF2F2',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 6,
     borderWidth: 1,
-    borderColor: '#FECACA',
+    gap: 6,
+  },
+  logoutText: {
+    fontSize: 13,
+    fontWeight: '500',
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#1A3165',
     marginBottom: 4,
   },
   headerSubtitle: {
     fontSize: 14,
-    color: '#6B7280',
   },
   loadingContainer: {
     flex: 1,
@@ -323,8 +414,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    fontSize: 16,
-    color: '#6B7280',
+    fontSize: 15,
     fontWeight: '500',
   },
   errorContainer: {
@@ -334,140 +424,155 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   errorIconContainer: {
-    marginBottom: 20,
+    marginBottom: 16,
   },
   errorTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
-    color: '#1A3165',
-    marginBottom: 12,
+    marginBottom: 10,
     textAlign: 'center',
   },
   errorText: {
-    fontSize: 16,
-    color: '#6B7280',
+    fontSize: 14,
     fontWeight: '500',
     textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 32,
+    lineHeight: 20,
+    marginBottom: 24,
   },
   retryButton: {
     backgroundColor: '#199BCF',
-    borderRadius: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 24,
+    borderRadius: 10,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
-    minWidth: 140,
+    marginBottom: 12,
+    minWidth: 120,
   },
   retryButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
-    marginLeft: 8,
+    marginLeft: 6,
   },
   logoutButtonError: {
     backgroundColor: 'transparent',
     borderWidth: 1,
     borderColor: '#EF4444',
-    borderRadius: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    minWidth: 140,
+    borderRadius: 10,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    minWidth: 120,
   },
   logoutButtonText: {
     color: '#EF4444',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     textAlign: 'center',
   },
   profileHeader: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 24,
+    borderRadius: 12,
+    padding: 20,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-    alignItems: 'center',
+  },
+  profileTopSection: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 20,
   },
   avatarContainer: {
-    marginBottom: 16,
+    position: 'relative',
+    marginRight: 16,
   },
   avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#199BCF',
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 3,
-    borderColor: '#FFFFFF',
   },
   avatarText: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    letterSpacing: 1,
-  },
-  studentInfo: {
-    alignItems: 'center',
-  },
-  studentName: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#1A3165',
-    marginBottom: 8,
-    textAlign: 'center',
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
+  },
+  statusIndicator: {
+    position: 'absolute',
+    bottom: 2,
+    right: 2,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 3,
+  },
+  profileInfo: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  studentName: {
+    fontSize: 22,
+    fontWeight: '700',
+    marginBottom: 6,
   },
   studentLRN: {
-    fontSize: 16,
-    color: '#6B7280',
+    fontSize: 15,
     fontWeight: '500',
-    marginBottom: 16,
+    marginBottom: 12,
   },
-  statusContainer: {
-    marginTop: 8,
+  enrollmentStatus: {
+    alignSelf: 'flex-start',
   },
   statusBadge: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
     borderWidth: 1,
-  },
-  statusConfirmed: {
-    backgroundColor: '#F0FDF4',
-    borderColor: '#BBF7D0',
-  },
-  statusPending: {
-    backgroundColor: '#FFFBEB',
-    borderColor: '#FDE68A',
+    gap: 6,
   },
   statusText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
   },
-  statusTextConfirmed: {
-    color: '#166534',
+  termInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: 10,
   },
-  statusTextPending: {
-    color: '#D97706',
+  termInfoLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  termLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  termValue: {
+    fontSize: 13,
+    fontWeight: '600',
   },
   actionCardsContainer: {
     gap: 4,
   },
   actionCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
     marginBottom: 4,
   },
   actionCardContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    padding: 14,
   },
   actionCardLeft: {
     flexDirection: 'row',
@@ -475,37 +580,34 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   actionCardIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: '#F8F8F8',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: 10,
   },
   actionCardIconText: {
-    fontSize: 20,
+    fontSize: 18,
   },
   actionCardText: {
     flex: 1,
   },
   actionCardTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
-    color: '#1A3165',
-    marginBottom: 4,
+    marginBottom: 3,
   },
   actionCardSubtitle: {
-    fontSize: 14,
-    color: '#6B7280',
+    fontSize: 13,
     fontWeight: '400',
   },
   actionCardRight: {
     marginLeft: 8,
   },
   actionCardArrow: {
-    fontSize: 20,
-    color: '#9CA3AF',
+    fontSize: 18,
     fontWeight: '300',
   },
 });

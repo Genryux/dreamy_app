@@ -75,37 +75,48 @@ export default function SubjectsTab({ subjects = [], loading = false }: Subjects
 
   const renderSubjectCard = (subject: Subject) => (
     <View key={subject.id} style={[styles.subjectCard, { 
-      backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-      borderColor: Colors[colorScheme ?? 'light'].cardBorder 
+      backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+      borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder 
     }]}>
       <View style={styles.subjectHeader}>
         <View style={styles.subjectTitleContainer}>
-          <Text style={[styles.subjectName, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>{subject.name || '-'}</Text>
-          <Text style={[styles.subjectCode, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>{subject.code || '-'}</Text>
+          <View style={[styles.subjectIconContainer, { backgroundColor: '#199BCF' }]}>
+            <IconSymbol name="book.fill" size={12} color="#FFFFFF" />
+          </View>
+          <View style={styles.subjectTitleText}>
+            <Text style={[styles.subjectName, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>{subject.name || '-'}</Text>
+            <Text style={[styles.subjectCode, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>{subject.code || '-'}</Text>
+          </View>
         </View>
       </View>
       
       <View style={styles.subjectDetails}>
-        <View style={styles.detailRow}>
+        <View style={[styles.detailRow, { borderBottomColor: colorScheme === 'dark' ? '#3A4F7B' : '#F3F4F6' }]}>
           <View style={styles.detailLabelContainer}>
-            <IconSymbol name="person.fill" size={14} color="#199BCF" />
-            <Text style={[styles.detailLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Teacher:</Text>
+            <View style={[styles.detailIconContainer, { backgroundColor: '#199BCF' }]}>
+              <IconSymbol name="person.fill" size={10} color="#FFFFFF" />
+            </View>
+            <Text style={[styles.detailLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Teacher</Text>
           </View>
           <Text style={[styles.detailValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{subject.teacher || '-'}</Text>
         </View>
         
-        <View style={styles.detailRow}>
+        <View style={[styles.detailRow, { borderBottomColor: colorScheme === 'dark' ? '#3A4F7B' : '#F3F4F6' }]}>
           <View style={styles.detailLabelContainer}>
-            <IconSymbol name="clock.fill" size={14} color="#199BCF" />
-            <Text style={[styles.detailLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Schedule:</Text>
+            <View style={[styles.detailIconContainer, { backgroundColor: '#199BCF' }]}>
+              <IconSymbol name="clock.fill" size={10} color="#FFFFFF" />
+            </View>
+            <Text style={[styles.detailLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Schedule</Text>
           </View>
           <Text style={[styles.detailValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{subject.schedule || '-'}</Text>
         </View>
         
-        <View style={styles.detailRow}>
+        <View style={[styles.detailRow, { borderBottomColor: 'transparent' }]}>
           <View style={styles.detailLabelContainer}>
-            <IconSymbol name="building.2.fill" size={14} color="#199BCF" />
-            <Text style={[styles.detailLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Room:</Text>
+            <View style={[styles.detailIconContainer, { backgroundColor: '#199BCF' }]}>
+              <IconSymbol name="building.2.fill" size={10} color="#FFFFFF" />
+            </View>
+            <Text style={[styles.detailLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Room</Text>
           </View>
           <Text style={[styles.detailValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{subject.room || '-'}</Text>
         </View>
@@ -139,17 +150,30 @@ export default function SubjectsTab({ subjects = [], loading = false }: Subjects
         <RefreshControl refreshing={isLoading} onRefresh={refresh} />
       }
     >
-      {/* Subtle Section Info */}
+      {/* Current Section Info */}
       <View style={[styles.sectionInfoCard, { 
-        backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-        borderColor: Colors[colorScheme ?? 'light'].cardBorder 
+        backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+        borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder 
       }]}>
-        <View style={styles.sectionInfoTitleContainer}>
-          <IconSymbol name="book.fill" size={16} color="#199BCF" />
-          <Text style={[styles.sectionInfoTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Current Section</Text>
+        <View style={styles.sectionInfoHeader}>
+          <View style={styles.sectionInfoTitleContainer}>
+            <View style={[styles.sectionInfoIconContainer, { backgroundColor: '#199BCF' }]}>
+              <IconSymbol name="book.fill" size={14} color="#FFFFFF" />
+            </View>
+            <Text style={[styles.sectionInfoTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Current Section</Text>
+          </View>
         </View>
-        <Text style={[styles.sectionInfoText, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>{sectionInfo.grade_level} - {sectionInfo.name}</Text>
-        <Text style={[styles.sectionInfoSubtext, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>{sectionInfo.academic_term}</Text>
+        
+        <View style={styles.sectionInfoContent}>
+          <View style={styles.sectionInfoMain}>
+            <Text style={[styles.sectionInfoText, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>
+              {sectionInfo.grade_level} - {sectionInfo.name}
+            </Text>
+            <Text style={[styles.sectionInfoSubtext, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>
+              {sectionInfo.academic_term}
+            </Text>
+          </View>
+        </View>
       </View>
 
       {/* Subjects List */}
@@ -164,8 +188,8 @@ export default function SubjectsTab({ subjects = [], loading = false }: Subjects
         </View>
       ) : (
         <View style={[styles.emptyState, { 
-          backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-          borderColor: Colors[colorScheme ?? 'light'].cardBorder 
+          backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+          borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder 
         }]}>
           <View style={styles.emptyIconContainer}>
             <IconSymbol name="book.fill" size={48} color="#199BCF" />
@@ -190,34 +214,47 @@ const styles = StyleSheet.create({
     paddingBottom: 100, // Extra padding for floating tab bar
   },
   sectionInfoCard: {
-    backgroundColor: '#ffffff',
     borderRadius: 12,
-    padding: 20,
+    padding: 16,
     marginTop: 8,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+  },
+  sectionInfoHeader: {
+    marginBottom: 12,
   },
   sectionInfoTitleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+  },
+  sectionInfoIconContainer: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
   },
   sectionInfoTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
-    color: '#1A3165',
-    marginLeft: 8,
+  },
+  sectionInfoContent: {
+    flex: 1,
+  },
+  sectionInfoMain: {
+    flex: 1,
   },
   sectionInfoText: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '700',
-    color: '#1A3165',
-    marginBottom: 2,
+    marginBottom: 4,
+    lineHeight: 22,
   },
   sectionInfoSubtext: {
-    fontSize: 14,
-    color: '#6B7280',
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '500',
   },
   subjectsHeader: {
     marginBottom: 16,
@@ -225,94 +262,103 @@ const styles = StyleSheet.create({
   subjectsTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1A3165',
     marginBottom: 4,
   },
   subjectsSubtitle: {
     fontSize: 14,
-    color: '#6B7280',
   },
   subjectsList: {
     gap: 12,
   },
   subjectCard: {
-    backgroundColor: '#ffffff',
     borderRadius: 12,
-    padding: 20,
-    marginBottom: 16,
+    padding: 16,
+    marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
   },
   subjectHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 16,
+    marginBottom: 14,
   },
   subjectTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  subjectIconContainer: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+  },
+  subjectTitleText: {
     flex: 1,
   },
   subjectName: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
-    color: '#1A3165',
-    marginBottom: 4,
+    marginBottom: 2,
+    lineHeight: 20,
   },
   subjectCode: {
-    fontSize: 14,
-    color: '#6B7280',
+    fontSize: 13,
     fontWeight: '500',
+    lineHeight: 16,
   },
   subjectDetails: {
-    gap: 12,
+    gap: 0,
   },
   detailRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
+    justifyContent: 'space-between',
+    paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    width: '100%',
   },
   detailLabelContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: 100,
+  },
+  detailIconContainer: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 6,
   },
   detailLabel: {
-    fontSize: 14,
-    color: '#6B7280',
-    fontWeight: '500',
-    marginLeft: 6,
+    fontSize: 12,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   detailValue: {
-    fontSize: 14,
-    color: '#1A3165',
+    fontSize: 13,
     fontWeight: '600',
-    flex: 1,
+    lineHeight: 18,
+    textAlign: 'right',
   },
   emptyState: {
-    backgroundColor: '#ffffff',
     borderRadius: 12,
-    padding: 32,
+    padding: 24,
     alignItems: 'center',
     marginTop: 12,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
   },
   emptyIconContainer: {
-    marginBottom: 16,
+    marginBottom: 12,
   },
   emptyTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
-    color: '#1A3165',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   emptyText: {
-    fontSize: 14,
-    color: '#6B7280',
+    fontSize: 13,
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 18,
   },
   loadingContainer: {
     flex: 1,
@@ -323,7 +369,6 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    color: '#6B7280',
   },
   errorContainer: {
     flex: 1,
@@ -340,7 +385,6 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 14,
-    color: '#6B7280',
     textAlign: 'center',
   },
 });

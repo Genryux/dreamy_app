@@ -11,6 +11,12 @@ export function useDashboard() {
       setLoading(true);
       setError(null);
       const dashboardData = await apiService.getDashboardData();
+      console.log('Dashboard Data Debug:', {
+        news: dashboardData.news,
+        announcements: dashboardData.announcements,
+        newsCount: dashboardData.news?.length || 0,
+        announcementsCount: dashboardData.announcements?.length || 0
+      });
       setData(dashboardData);
     } catch (err: any) {
       setError(err?.message || 'Failed to load dashboard data');

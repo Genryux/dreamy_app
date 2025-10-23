@@ -1,4 +1,6 @@
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { Colors } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useColorScheme';
 import { apiService } from '@/services/api';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
@@ -10,6 +12,7 @@ export default function PinVerificationScreen() {
   const [isVerifying, setIsVerifying] = useState(false);
   const [attempts, setAttempts] = useState(0);
   const maxAttempts = 3;
+  const colorScheme = useColorScheme();
 
   const handleVerifyPin = async () => {
     if (!pin) {
@@ -92,16 +95,19 @@ export default function PinVerificationScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colorScheme === 'dark' ? '#1A3165' : Colors[colorScheme ?? 'light'].background }]}>
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
-          <View style={styles.iconContainer}>
-            <IconSymbol name="lock.shield" size={48} color="#199BCF" />
+          <View style={[styles.iconContainer, { 
+            backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : '#EFF6FF',
+            borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder
+          }]}>
+            <IconSymbol name="lock.shield" size={32} color="#199BCF" />
           </View>
-          <Text style={styles.title}>Enter Your PIN</Text>
-          <Text style={styles.subtitle}>
-            Please enter your 6-digit PIN to continue
+          <Text style={[styles.title, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Enter PIN</Text>
+          <Text style={[styles.subtitle, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>
+            Enter your 6-digit PIN to continue
           </Text>
         </View>
 
@@ -109,10 +115,15 @@ export default function PinVerificationScreen() {
         <View style={styles.form}>
           <View style={styles.inputGroup}>
             <TextInput
-              style={styles.pinInput}
+              style={[styles.pinInput, {
+                backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+                borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder,
+                color: Colors[colorScheme ?? 'light'].textPrimary
+              }]}
               value={pin}
               onChangeText={setPin}
               placeholder="000000"
+              placeholderTextColor={Colors[colorScheme ?? 'light'].textTertiary}
               keyboardType="numeric"
               secureTextEntry
               maxLength={6}
@@ -126,19 +137,21 @@ export default function PinVerificationScreen() {
             onPress={handleVerifyPin}
             disabled={isVerifying}
           >
-            <View style={styles.buttonContent}>
-              <IconSymbol name="checkmark" size={20} color="#FFFFFF" />
-              <Text style={styles.buttonText}>
-                {isVerifying ? 'Verifying...' : 'Verify PIN'}
-              </Text>
-            </View>
+            <Text style={styles.buttonText}>
+              {isVerifying ? 'Verifying...' : 'Continue'}
+            </Text>
           </TouchableOpacity>
         </View>
 
         {/* Attempts Counter */}
         {attempts > 0 && (
-          <View style={styles.attemptsContainer}>
-            <Text style={styles.attemptsText}>
+          <View style={[styles.attemptsContainer, {
+            backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : '#FEF3C7',
+            borderColor: colorScheme === 'dark' ? '#4A5F8B' : '#FDE68A'
+          }]}>
+            <Text style={[styles.attemptsText, {
+              color: colorScheme === 'dark' ? '#FFFFFF' : '#92400E'
+            }]}>
               Attempts: {attempts}/{maxAttempts}
             </Text>
           </View>
@@ -146,9 +159,12 @@ export default function PinVerificationScreen() {
 
         {/* Logout Option */}
         <View style={styles.footer}>
-          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <IconSymbol name="arrow.right.square" size={16} color="#EF4444" />
-            <Text style={styles.logoutText}>Logout</Text>
+          <TouchableOpacity style={[styles.logoutButton, {
+            backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : '#F3F4F6',
+            borderColor: colorScheme === 'dark' ? '#3A4F7B' : '#D1D5DB'
+          }]} onPress={handleLogout}>
+            <IconSymbol name="arrow.right.square" size={16} color={Colors[colorScheme ?? 'light'].textSecondary} />
+            <Text style={[styles.logoutText, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>Logout</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -159,7 +175,6 @@ export default function PinVerificationScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F8F8F8',
   },
   container: {
     flex: 1,
@@ -168,81 +183,68 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 32,
   },
   iconContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#EFF6FF',
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 20,
+    marginBottom: 16,
+    borderWidth: 1,
   },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '700',
-    color: '#1A3165',
-    marginBottom: 8,
+    marginBottom: 6,
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: 16,
-    color: '#6B7280',
+    fontSize: 14,
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: 20,
   },
   form: {
-    marginBottom: 40,
+    marginBottom: 32,
   },
   inputGroup: {
-    marginBottom: 24,
+    marginBottom: 20,
   },
   pinInput: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '600',
-    color: '#1A3165',
-    backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: '#199BCF',
-    borderRadius: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 20,
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
     textAlign: 'center',
-    letterSpacing: 8,
+    letterSpacing: 6,
   },
   button: {
     backgroundColor: '#199BCF',
-    borderRadius: 12,
-    paddingVertical: 16,
+    borderRadius: 10,
+    paddingVertical: 14,
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: 6,
   },
   buttonDisabled: {
     backgroundColor: '#9CA3AF',
   },
-  buttonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
   buttonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
   },
   attemptsContainer: {
-    backgroundColor: '#FEF3C7',
     borderRadius: 8,
-    padding: 12,
+    padding: 10,
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#FDE68A',
   },
   attemptsText: {
-    fontSize: 14,
-    color: '#92400E',
+    fontSize: 13,
     fontWeight: '600',
   },
   footer: {
@@ -252,13 +254,14 @@ const styles = StyleSheet.create({
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
+    gap: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    borderWidth: 1,
   },
   logoutText: {
-    fontSize: 16,
-    color: '#EF4444',
+    fontSize: 14,
     fontWeight: '500',
   },
 });

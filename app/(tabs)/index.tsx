@@ -17,8 +17,8 @@ export default function AcademicInfoScreen() {
   const colorScheme = useColorScheme();
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
-      <View style={{ flex: 1, backgroundColor: Colors[colorScheme ?? 'light'].background }}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colorScheme === 'dark' ? '#1A3165' : Colors[colorScheme ?? 'light'].background }]}>
+      <View style={{ flex: 1, backgroundColor: colorScheme === 'dark' ? '#1A3165' : Colors[colorScheme ?? 'light'].background }}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={[styles.headerTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Academic Information</Text>
@@ -27,8 +27,8 @@ export default function AcademicInfoScreen() {
 
       {/* Tab Switcher */}
       <View style={[styles.tabContainer, { 
-        backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-        borderColor: Colors[colorScheme ?? 'light'].cardBorder 
+        backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+        borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder 
       }]}>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'subjects' && styles.activeTab]}
@@ -40,7 +40,9 @@ export default function AcademicInfoScreen() {
               size={18} 
               color={activeTab === 'subjects' ? '#FFFFFF' : '#199BCF'} 
             />
-            <Text style={[styles.tabText, activeTab === 'subjects' && styles.activeTabText]}>
+            <Text style={[styles.tabText, { 
+              color: activeTab === 'subjects' ? '#FFFFFF' : Colors[colorScheme ?? 'light'].textSecondary 
+            }]}>
               Subjects
             </Text>
           </View>
@@ -55,7 +57,9 @@ export default function AcademicInfoScreen() {
               size={18} 
               color={activeTab === 'sections' ? '#FFFFFF' : '#199BCF'} 
             />
-            <Text style={[styles.tabText, activeTab === 'sections' && styles.activeTabText]}>
+            <Text style={[styles.tabText, { 
+              color: activeTab === 'sections' ? '#FFFFFF' : Colors[colorScheme ?? 'light'].textSecondary 
+            }]}>
               Sections
             </Text>
           </View>
@@ -81,28 +85,24 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   header: {
-    paddingTop: 8,
+    paddingTop: 16,
     paddingHorizontal: 20,
     paddingBottom: 16,
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#1A3165',
     marginBottom: 4,
   },
   headerSubtitle: {
     fontSize: 14,
-    color: '#6B7280',
   },
   tabContainer: {
     flexDirection: 'row',
-    backgroundColor: '#ffffff',
     marginHorizontal: 16,
     borderRadius: 12,
     padding: 4,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
   },
   tab: {
     flex: 1,
@@ -122,7 +122,6 @@ const styles = StyleSheet.create({
   tabText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#6B7280',
   },
   activeTabText: {
     color: '#ffffff',

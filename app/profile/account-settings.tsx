@@ -264,8 +264,8 @@ export default function AccountSettingsScreen() {
           },
         }}
       />
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
-        <View style={{ flex: 1, backgroundColor: Colors[colorScheme ?? 'light'].background }}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colorScheme === 'dark' ? '#1A3165' : Colors[colorScheme ?? 'light'].background }]}>
+        <View style={{ flex: 1, backgroundColor: colorScheme === 'dark' ? '#1A3165' : Colors[colorScheme ?? 'light'].background }}>
         {/* Header */}
         <View style={styles.header}>
           <Text style={[styles.headerTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Account Settings</Text>
@@ -287,8 +287,8 @@ export default function AccountSettingsScreen() {
 
             {/* Change Password Card */}
             <View style={[styles.card, { 
-              backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-              borderColor: Colors[colorScheme ?? 'light'].cardBorder 
+            backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+            borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder
             }]}>
               <View style={styles.cardHeader}>
                 <Text style={[styles.cardTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Change Password</Text>
@@ -300,8 +300,8 @@ export default function AccountSettingsScreen() {
                   <Text style={[styles.inputLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Current Password</Text>
                   <TextInput
                     style={[styles.input, { 
-                      backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-                      borderColor: Colors[colorScheme ?? 'light'].cardBorder,
+            backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+            borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder,
                       color: Colors[colorScheme ?? 'light'].textValue 
                     }]}
                     value={currentPassword}
@@ -317,8 +317,8 @@ export default function AccountSettingsScreen() {
                   <Text style={[styles.inputLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>New Password</Text>
                   <TextInput
                     style={[styles.input, { 
-                      backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-                      borderColor: Colors[colorScheme ?? 'light'].cardBorder,
+            backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+            borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder,
                       color: Colors[colorScheme ?? 'light'].textValue 
                     }]}
                     value={newPassword}
@@ -334,8 +334,8 @@ export default function AccountSettingsScreen() {
                   <Text style={[styles.inputLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Confirm New Password</Text>
                   <TextInput
                     style={[styles.input, { 
-                      backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-                      borderColor: Colors[colorScheme ?? 'light'].cardBorder,
+            backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+            borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder,
                       color: Colors[colorScheme ?? 'light'].textValue 
                     }]}
                     value={confirmPassword}
@@ -351,8 +351,8 @@ export default function AccountSettingsScreen() {
                   <Text style={[styles.inputLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>PIN Verification</Text>
                   <TextInput
                     style={[styles.input, !user?.pin_enabled && styles.inputDisabled, { 
-                      backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-                      borderColor: Colors[colorScheme ?? 'light'].cardBorder,
+            backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+            borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder,
                       color: Colors[colorScheme ?? 'light'].textValue 
                     }]}
                     value={passwordPin}
@@ -383,8 +383,8 @@ export default function AccountSettingsScreen() {
 
             {/* Change Email Card */}
             <View style={[styles.card, styles.emailCard, { 
-              backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-              borderColor: Colors[colorScheme ?? 'light'].cardBorder 
+            backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+            borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder
             }]}>
               <View style={styles.cardHeader}>
                 <Text style={[styles.cardTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Change Email Address</Text>
@@ -394,15 +394,19 @@ export default function AccountSettingsScreen() {
               <View style={styles.form}>
                 <View style={styles.inputGroup}>
                   <Text style={[styles.inputLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Current Email</Text>
-                  <Text style={[styles.currentValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{student?.email_address || 'Not provided'}</Text>
+                  <Text style={[styles.currentValue, { 
+                    color: Colors[colorScheme ?? 'light'].textValue,
+                    backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : '#F9FAFB',
+                    borderColor: colorScheme === 'dark' ? '#4A5F8B' : '#F3F4F6'
+                  }]}>{student?.email_address || 'Not provided'}</Text>
                 </View>
 
                 <View style={styles.inputGroup}>
                   <Text style={[styles.inputLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>New Email Address</Text>
                   <TextInput
                     style={[styles.input, { 
-                      backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-                      borderColor: Colors[colorScheme ?? 'light'].cardBorder,
+            backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+            borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder,
                       color: Colors[colorScheme ?? 'light'].textValue 
                     }]}
                     value={newEmail}
@@ -418,8 +422,8 @@ export default function AccountSettingsScreen() {
                   <Text style={[styles.inputLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>PIN Verification</Text>
                   <TextInput
                     style={[styles.input, !user?.pin_enabled && styles.inputDisabled, { 
-                      backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-                      borderColor: Colors[colorScheme ?? 'light'].cardBorder,
+            backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+            borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder,
                       color: Colors[colorScheme ?? 'light'].textValue 
                     }]}
                     value={emailPin}
@@ -450,8 +454,8 @@ export default function AccountSettingsScreen() {
 
             {/* PIN Management Card */}
             <View style={[styles.card, styles.pinCard, { 
-              backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-              borderColor: Colors[colorScheme ?? 'light'].cardBorder 
+            backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+            borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder
             }]}>
               <View style={styles.cardHeader}>
                 <View style={styles.cardTitleRow}>
@@ -475,8 +479,8 @@ export default function AccountSettingsScreen() {
                   <Text style={[styles.inputLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Current PIN</Text>
                   <TextInput
                     style={[styles.input, { 
-                      backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-                      borderColor: Colors[colorScheme ?? 'light'].cardBorder,
+            backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+            borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder,
                       color: Colors[colorScheme ?? 'light'].textValue 
                     }]}
                     value={currentPin}
@@ -493,8 +497,8 @@ export default function AccountSettingsScreen() {
                   <Text style={[styles.inputLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>New PIN</Text>
                   <TextInput
                     style={[styles.input, { 
-                      backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-                      borderColor: Colors[colorScheme ?? 'light'].cardBorder,
+            backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+            borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder,
                       color: Colors[colorScheme ?? 'light'].textValue 
                     }]}
                     value={newPin}
@@ -511,8 +515,8 @@ export default function AccountSettingsScreen() {
                   <Text style={[styles.inputLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Confirm New PIN</Text>
                   <TextInput
                     style={[styles.input, { 
-                      backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-                      borderColor: Colors[colorScheme ?? 'light'].cardBorder,
+            backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+            borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder,
                       color: Colors[colorScheme ?? 'light'].textValue 
                     }]}
                     value={confirmNewPin}
@@ -547,8 +551,8 @@ export default function AccountSettingsScreen() {
                   <Text style={[styles.inputLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Enter PIN to Toggle</Text>
                   <TextInput
                     style={[styles.input, { 
-                      backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-                      borderColor: Colors[colorScheme ?? 'light'].cardBorder,
+            backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+            borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder,
                       color: Colors[colorScheme ?? 'light'].textValue 
                     }]}
                     value={togglePin}
@@ -588,13 +592,13 @@ export default function AccountSettingsScreen() {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <IconSymbol name="person" size={24} color="#199BCF" />
-              <Text style={styles.sectionTitle}>Account Information</Text>
+              <Text style={[styles.sectionTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Account Information</Text>
             </View>
 
             {loading ? (
               <View style={[styles.card, { 
-                backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-                borderColor: Colors[colorScheme ?? 'light'].cardBorder 
+            backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+            borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder
               }]}>
                 <View style={styles.loadingContainer}>
                   <Text style={[styles.loadingText, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>Loading account information...</Text>
@@ -602,8 +606,8 @@ export default function AccountSettingsScreen() {
               </View>
             ) : (
               <View style={[styles.card, { 
-                backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-                borderColor: Colors[colorScheme ?? 'light'].cardBorder 
+            backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+            borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder
               }]}>
               <View style={styles.infoRow}>
                 <Text style={[styles.infoLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Account Type</Text>
@@ -659,8 +663,8 @@ export default function AccountSettingsScreen() {
             </View>
 
             <View style={[styles.card, { 
-              backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-              borderColor: Colors[colorScheme ?? 'light'].cardBorder 
+            backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+            borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder
             }]}>
               <TouchableOpacity style={styles.settingRow}>
                 <View style={styles.settingLeft}>
@@ -694,19 +698,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F8F8',
   },
   header: {
-    paddingTop: 8,
+    paddingTop: 4,
     paddingHorizontal: 20,
-    paddingBottom: 16,
+    paddingBottom: 12,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '700',
-    color: '#1A3165',
-    marginBottom: 4,
+    marginBottom: 3,
   },
   headerSubtitle: {
-    fontSize: 14,
-    color: '#6B7280',
+    fontSize: 13,
   },
   content: {
     flex: 1,
@@ -717,66 +719,58 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   section: {
-    marginBottom: 24,
+    marginBottom: 20,
   },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
-    color: '#1A3165',
-    marginLeft: 8,
+    marginLeft: 6,
   },
   card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-    padding: 20,
+    padding: 16,
   },
   cardHeader: {
-    marginBottom: 20,
+    marginBottom: 16,
   },
   cardTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
-    color: '#1A3165',
-    marginBottom: 4,
+    marginBottom: 3,
   },
   cardSubtitle: {
-    fontSize: 14,
-    color: '#6B7280',
+    fontSize: 13,
   },
   form: {
-    gap: 16,
+    gap: 14,
   },
   inputGroup: {
-    gap: 8,
+    gap: 6,
   },
   inputLabel: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#374151',
+    fontSize: 12,
+    fontWeight: '600',
   },
   input: {
-    backgroundColor: '#F9FAFB',
     borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-    color: '#111827',
+    borderColor: '#199BCF',
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    fontSize: 14,
   },
   button: {
     backgroundColor: '#199BCF',
-    borderRadius: 12,
-    paddingVertical: 16,
+    borderRadius: 6,
+    paddingVertical: 12,
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: 6,
   },
   buttonDisabled: {
     backgroundColor: '#9CA3AF',
@@ -784,33 +778,31 @@ const styles = StyleSheet.create({
   buttonContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
   },
   buttonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
   },
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 10,
   },
   infoLabel: {
-    fontSize: 14,
-    color: '#6B7280',
-    fontWeight: '500',
+    fontSize: 12,
+    fontWeight: '600',
   },
   infoValue: {
-    fontSize: 14,
-    color: '#111827',
+    fontSize: 13,
     fontWeight: '500',
   },
   statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 6,
     borderWidth: 1,
   },
   statusActive: {
@@ -826,7 +818,7 @@ const styles = StyleSheet.create({
     borderColor: '#FECACA',
   },
   statusText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
   },
   statusTextActive: {

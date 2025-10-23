@@ -3,16 +3,17 @@ import { Colors } from '@/constants/Colors';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Notification } from '@/services/api';
+import { router } from 'expo-router';
 import React, { useCallback } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    FlatList,
-    RefreshControl,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -23,9 +24,7 @@ export default function NotificationsScreen() {
     unreadCount,
     isLoading,
     isConnected,
-    pendingNotifications,
     refreshNotifications,
-    markAsRead,
     markAllAsRead,
     loadMore,
     hasMore
@@ -38,10 +37,44 @@ export default function NotificationsScreen() {
   }, [notifications]);
 
   const handleNotificationPress = useCallback((notification: Notification) => {
-    if (!notification.read_at) {
-      markAsRead(notification.id);
+    // Redirect to the appropriate tab based on notification type or URL
+    const redirectToTab = (tabName: string) => {
+      router.push(`/(tabs)/${tabName}`);
+    };
+
+    // Check if notification has a specific URL
+    if (notification.data.url) {
+      // Parse the URL to determine the target tab
+      const url = notification.data.url;
+      
+      if (url.includes('/financial') || url.includes('/invoices') || url.includes('/payments')) {
+        redirectToTab('financial');
+      } else if (url.includes('/academic') || url.includes('/sections') || url.includes('/subjects')) {
+        redirectToTab('index'); // Academic tab
+      } else if (url.includes('/dashboard') || url.includes('/home')) {
+        redirectToTab('dashboard');
+      } else if (url.includes('/profile') || url.includes('/account')) {
+        redirectToTab('profile');
+      } else {
+        // Default to dashboard for unknown URLs
+        redirectToTab('dashboard');
+      }
+    } else {
+      // Fallback: redirect based on notification type
+      const type = notification.type.toLowerCase();
+      
+      if (type.includes('invoice') || type.includes('payment') || type.includes('financial')) {
+        redirectToTab('financial');
+      } else if (type.includes('academic') || type.includes('grade') || type.includes('enrollment')) {
+        redirectToTab('index'); // Academic tab
+      } else if (type.includes('profile') || type.includes('account')) {
+        redirectToTab('profile');
+      } else {
+        // Default to dashboard
+        redirectToTab('dashboard');
+      }
     }
-  }, [markAsRead]);
+  }, []);
 
   const handleMarkAllRead = useCallback(() => {
     if (unreadCount === 0) return;
@@ -69,7 +102,6 @@ export default function NotificationsScreen() {
 
   const renderNotification = ({ item }: { item: Notification }) => {
     const isUnread = !item.read_at;
-    const isPending = pendingNotifications.has(item.id);
     
     return (
       <TouchableOpacity
@@ -77,20 +109,19 @@ export default function NotificationsScreen() {
           styles.notificationItem,
           {
             backgroundColor: isUnread 
-              ? Colors[colorScheme ?? 'light'].cardBackground 
-              : Colors[colorScheme ?? 'light'].background,
-            borderColor: Colors[colorScheme ?? 'light'].cardBorder,
+              ? (colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground)
+              : (colorScheme === 'dark' ? '#1A3165' : Colors[colorScheme ?? 'light'].background),
+            borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder,
           }
         ]}
         onPress={() => handleNotificationPress(item)}
-        disabled={isPending}
       >
         <View style={styles.notificationContent}>
           <View style={styles.notificationHeader}>
             <View style={styles.iconContainer}>
               <IconSymbol 
                 name="bell.fill" 
-                size={20} 
+                size={18} 
                 color={isUnread ? '#199BCF' : Colors[colorScheme ?? 'light'].textSecondary} 
               />
             </View>
@@ -117,11 +148,16 @@ export default function NotificationsScreen() {
                 {getTimeAgo(item.created_at)}
               </Text>
             </View>
-            {isPending ? (
-              <ActivityIndicator size="small" color="#199BCF" style={styles.pendingIndicator} />
-            ) : isUnread ? (
+            {isUnread ? (
               <View style={styles.unreadIndicator} />
-            ) : null}
+            ) : (
+              <IconSymbol 
+                name="chevron.right" 
+                size={14} 
+                color={Colors[colorScheme ?? 'light'].textSecondary} 
+                style={styles.redirectIndicator}
+              />
+            )}
           </View>
         </View>
       </TouchableOpacity>
@@ -130,11 +166,11 @@ export default function NotificationsScreen() {
 
   const renderEmpty = () => (
     <View style={[styles.emptyState, { 
-      backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-      borderColor: Colors[colorScheme ?? 'light'].cardBorder 
+      backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+      borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder 
     }]}>
       <View style={styles.emptyIconContainer}>
-        <IconSymbol name="bell.fill" size={48} color="#199BCF" />
+        <IconSymbol name="bell.fill" size={40} color="#199BCF" />
       </View>
       <Text style={[styles.emptyTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>
         No Notifications Yet
@@ -159,7 +195,7 @@ export default function NotificationsScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colorScheme === 'dark' ? '#1A3165' : Colors[colorScheme ?? 'light'].background }]}>
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
@@ -217,9 +253,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   header: {
-    paddingTop: 4,
+    paddingTop: 16,
     paddingHorizontal: 20,
-    paddingBottom: 12,
+    paddingBottom: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
@@ -240,14 +276,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   markAllButton: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     paddingVertical: 6,
     backgroundColor: '#199BCF',
     borderRadius: 6,
   },
   markAllText: {
     color: 'white',
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
   },
   content: {
@@ -267,17 +303,17 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   emptyIconContainer: {
-    marginBottom: 16,
+    marginBottom: 12,
   },
   emptyTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   emptyText: {
-    fontSize: 14,
+    fontSize: 13,
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 18,
   },
   notificationItem: {
     borderRadius: 12,
@@ -285,48 +321,48 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   notificationContent: {
-    padding: 16,
+    padding: 14,
   },
   notificationHeader: {
     flexDirection: 'row',
     alignItems: 'flex-start',
   },
   iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: 'rgba(25, 155, 207, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: 10,
   },
   notificationText: {
     flex: 1,
   },
   notificationTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
-    marginBottom: 4,
+    marginBottom: 3,
   },
   notificationMessage: {
-    fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 8,
+    fontSize: 13,
+    lineHeight: 18,
+    marginBottom: 6,
   },
   notificationTime: {
-    fontSize: 12,
+    fontSize: 11,
   },
   unreadIndicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
     backgroundColor: '#199BCF',
-    marginLeft: 8,
-    marginTop: 6,
+    marginLeft: 6,
+    marginTop: 4,
   },
-  pendingIndicator: {
-    marginLeft: 8,
-    marginTop: 2,
+  redirectIndicator: {
+    marginLeft: 6,
+    marginTop: 4,
   },
   loadingFooter: {
     flexDirection: 'row',

@@ -1,4 +1,6 @@
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { Colors } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useColorScheme';
 import { apiService } from '@/services/api';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
@@ -9,6 +11,7 @@ export default function PinSetupScreen() {
   const [pin, setPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
   const [isSettingUp, setIsSettingUp] = useState(false);
+  const colorScheme = useColorScheme();
 
   const handleSetupPin = async () => {
     // Validation
@@ -57,15 +60,18 @@ export default function PinSetupScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colorScheme === 'dark' ? '#1A3165' : Colors[colorScheme ?? 'light'].background }]}>
+      <View style={[styles.container, { backgroundColor: colorScheme === 'dark' ? '#1A3165' : Colors[colorScheme ?? 'light'].background }]}>
         {/* Header */}
         <View style={styles.header}>
-          <View style={styles.iconContainer}>
+          <View style={[styles.iconContainer, { 
+            backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : '#EFF6FF',
+            borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder
+          }]}>
             <IconSymbol name="lock.shield" size={48} color="#199BCF" />
           </View>
-          <Text style={styles.title}>Setup Your PIN</Text>
-          <Text style={styles.subtitle}>
+          <Text style={[styles.title, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Setup Your PIN</Text>
+          <Text style={[styles.subtitle, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>
             Create a 6-digit PIN for secure access to your account
           </Text>
         </View>
@@ -73,12 +79,17 @@ export default function PinSetupScreen() {
         {/* PIN Input Form */}
         <View style={styles.form}>
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Enter PIN</Text>
+            <Text style={[styles.inputLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Enter PIN</Text>
             <TextInput
-              style={styles.pinInput}
+              style={[styles.pinInput, { 
+                backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+                borderColor: '#199BCF',
+                color: Colors[colorScheme ?? 'light'].textValue
+              }]}
               value={pin}
               onChangeText={setPin}
               placeholder="000000"
+              placeholderTextColor={Colors[colorScheme ?? 'light'].textTertiary}
               keyboardType="numeric"
               secureTextEntry
               maxLength={6}
@@ -87,12 +98,17 @@ export default function PinSetupScreen() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Confirm PIN</Text>
+            <Text style={[styles.inputLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Confirm PIN</Text>
             <TextInput
-              style={styles.pinInput}
+              style={[styles.pinInput, { 
+                backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+                borderColor: '#199BCF',
+                color: Colors[colorScheme ?? 'light'].textValue
+              }]}
               value={confirmPin}
               onChangeText={setConfirmPin}
               placeholder="000000"
+              placeholderTextColor={Colors[colorScheme ?? 'light'].textTertiary}
               keyboardType="numeric"
               secureTextEntry
               maxLength={6}
@@ -115,18 +131,21 @@ export default function PinSetupScreen() {
         </View>
 
         {/* Security Info */}
-        <View style={styles.infoContainer}>
+        <View style={[styles.infoContainer, { 
+          backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : '#F0FDF4',
+          borderColor: colorScheme === 'dark' ? '#3A4F7B' : '#BBF7D0'
+        }]}>
           <View style={styles.infoItem}>
             <IconSymbol name="checkmark" size={16} color="#10B981" />
-            <Text style={styles.infoText}>PIN is encrypted and secure</Text>
+            <Text style={[styles.infoText, { color: Colors[colorScheme ?? 'light'].textValue }]}>PIN is encrypted and secure</Text>
           </View>
           <View style={styles.infoItem}>
             <IconSymbol name="checkmark" size={16} color="#10B981" />
-            <Text style={styles.infoText}>Required for sensitive operations</Text>
+            <Text style={[styles.infoText, { color: Colors[colorScheme ?? 'light'].textValue }]}>Required for sensitive operations</Text>
           </View>
           <View style={styles.infoItem}>
             <IconSymbol name="checkmark" size={16} color="#10B981" />
-            <Text style={styles.infoText}>Can be disabled in settings</Text>
+            <Text style={[styles.infoText, { color: Colors[colorScheme ?? 'light'].textValue }]}>Can be disabled in settings</Text>
           </View>
         </View>
       </View>
@@ -137,7 +156,7 @@ export default function PinSetupScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F8F8F8',
+    backgroundColor: 'transparent',
   },
   container: {
     flex: 1,
@@ -146,62 +165,56 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 32,
   },
   iconContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#EFF6FF',
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 20,
+    marginBottom: 16,
+    borderWidth: 1,
   },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '700',
-    color: '#1A3165',
-    marginBottom: 8,
+    marginBottom: 6,
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: 16,
-    color: '#6B7280',
+    fontSize: 14,
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: 20,
   },
   form: {
-    marginBottom: 40,
+    marginBottom: 32,
   },
   inputGroup: {
-    marginBottom: 24,
+    marginBottom: 20,
   },
   inputLabel: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
-    color: '#374151',
-    marginBottom: 12,
+    marginBottom: 8,
     textAlign: 'center',
   },
   pinInput: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '600',
-    color: '#1A3165',
-    backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: '#199BCF',
-    borderRadius: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 20,
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     textAlign: 'center',
-    letterSpacing: 8,
+    letterSpacing: 6,
   },
   button: {
     backgroundColor: '#199BCF',
-    borderRadius: 12,
-    paddingVertical: 16,
+    borderRadius: 8,
+    paddingVertical: 12,
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: 6,
   },
   buttonDisabled: {
     backgroundColor: '#9CA3AF',
@@ -209,29 +222,26 @@ const styles = StyleSheet.create({
   buttonContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
   },
   buttonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
   },
   infoContainer: {
-    backgroundColor: '#F0FDF4',
-    borderRadius: 12,
-    padding: 20,
+    borderRadius: 8,
+    padding: 16,
     borderWidth: 1,
-    borderColor: '#BBF7D0',
   },
   infoItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   infoText: {
-    fontSize: 14,
-    color: '#166534',
-    marginLeft: 8,
+    fontSize: 13,
+    marginLeft: 6,
     fontWeight: '500',
   },
 });

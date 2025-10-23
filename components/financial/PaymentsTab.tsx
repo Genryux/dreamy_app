@@ -23,6 +23,10 @@ interface Payment {
   type: string;
   reference_no: string;
   status: string;
+  total_discount?: number;
+  original_amount?: number;
+  early_discount?: number;
+  custom_discounts?: number;
 }
 
 interface PaymentsTabProps {
@@ -101,8 +105,8 @@ export default function PaymentsTab({ payments = [], loading = false }: Payments
 
   const renderPaymentCard = (payment: Payment) => (
     <View key={payment.id} style={[styles.paymentCard, { 
-      backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-      borderColor: Colors[colorScheme ?? 'light'].cardBorder 
+      backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+      borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder 
     }]}>
       <View style={styles.paymentHeader}>
         <View style={styles.paymentTitleContainer}>
@@ -115,7 +119,7 @@ export default function PaymentsTab({ payments = [], loading = false }: Payments
       </View>
       
       <View style={styles.paymentDetails}>
-        <View style={[styles.detailRow, { borderBottomColor: Colors[colorScheme ?? 'light'].cardBorder }]}>
+        <View style={[styles.detailRow, { borderBottomColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder }]}>
           <View style={styles.detailLabelContainer}>
             <IconSymbol name="dollarsign.circle.fill" size={14} color="#199BCF" />
             <Text style={[styles.detailLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Amount:</Text>
@@ -123,15 +127,28 @@ export default function PaymentsTab({ payments = [], loading = false }: Payments
           <Text style={[styles.detailValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>₱{payment.amount.toLocaleString()}</Text>
         </View>
         
-        <View style={[styles.detailRow, { borderBottomColor: Colors[colorScheme ?? 'light'].cardBorder }]}>
+        {/* Total Discount - Show if discount exists */}
+        {payment.total_discount && payment.total_discount > 0 && (
+          <View style={[styles.detailRow, { borderBottomColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder }]}>
+            <View style={styles.detailLabelContainer}>
+              <IconSymbol name="percent" size={14} color="#199BCF" />
+              <Text style={[styles.detailLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Total Discount:</Text>
+            </View>
+            <Text style={[styles.detailValue, { color: '#10B981' }]}>-₱{payment.total_discount.toLocaleString()}</Text>
+          </View>
+        )}
+        
+        <View style={[styles.detailRow, { borderBottomColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder }]}>
           <View style={styles.detailLabelContainer}>
             <IconSymbol name="doc.text.fill" size={14} color="#199BCF" />
             <Text style={[styles.detailLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Invoice:</Text>
           </View>
-          <Text style={[styles.detailValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{payment.invoice_number}</Text>
+          <Text style={[styles.detailValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>
+            {payment.invoice_number || 'N/A'}
+          </Text>
         </View>
         
-        <View style={[styles.detailRow, { borderBottomColor: Colors[colorScheme ?? 'light'].cardBorder }]}>
+        <View style={[styles.detailRow, { borderBottomColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder }]}>
           <View style={styles.detailLabelContainer}>
             <IconSymbol name={getMethodIcon(payment.method)} size={14} color="#199BCF" />
             <Text style={[styles.detailLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Payment Method:</Text>
@@ -139,7 +156,7 @@ export default function PaymentsTab({ payments = [], loading = false }: Payments
           <Text style={[styles.detailValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{payment.method}</Text>
         </View>
         
-        <View style={[styles.detailRow, { borderBottomColor: Colors[colorScheme ?? 'light'].cardBorder }]}>
+        <View style={[styles.detailRow, { borderBottomColor: 'transparent' }]}>
           <View style={styles.detailLabelContainer}>
             <IconSymbol name={getTypeIcon(payment.type)} size={14} color="#199BCF" />
             <Text style={[styles.detailLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Payment Type:</Text>
@@ -181,12 +198,11 @@ export default function PaymentsTab({ payments = [], loading = false }: Payments
     >
       {/* Payment Summary */}
       <View style={[styles.summaryCard, { 
-        backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-        borderColor: Colors[colorScheme ?? 'light'].cardBorder 
+        backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+        borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder 
       }]}>
         <View style={styles.summaryHeader}>
           <View style={styles.summaryTitleContainer}>
-            <IconSymbol name="creditcard.fill" size={20} color="#199BCF" />
             <Text style={[styles.summaryTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Payment Summary</Text>
           </View>
           <Text style={[styles.summarySubtitle, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>{academicTerm}</Text>
@@ -224,13 +240,16 @@ export default function PaymentsTab({ payments = [], loading = false }: Payments
           {availableTerms && availableTerms.length > 1 && (
             <View style={styles.termSelector}>
               <TouchableOpacity 
-                style={styles.termSelectorButton}
+                style={[styles.termSelectorButton, {
+                  backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : '#F3F4F6',
+                  borderColor: colorScheme === 'dark' ? '#4A5F8B' : '#E5E7EB'
+                }]}
                 onPress={() => setShowTermModal(true)}
               >
-                <Text style={styles.termSelectorText}>
+                <Text style={[styles.termSelectorText, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>
                   {getCurrentTermName()}
                 </Text>
-                <IconSymbol name="chevron.down" size={12} color="#6B7280" />
+                <IconSymbol name="chevron.down" size={12} color={Colors[colorScheme ?? 'light'].textSecondary} />
               </TouchableOpacity>
             </View>
           )}
@@ -244,11 +263,11 @@ export default function PaymentsTab({ payments = [], loading = false }: Payments
         </View>
       ) : (
         <View style={[styles.emptyState, { 
-          backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-          borderColor: Colors[colorScheme ?? 'light'].cardBorder 
+          backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+          borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder 
         }]}>
           <View style={styles.emptyIconContainer}>
-            <IconSymbol name="creditcard.fill" size={48} color="#199BCF" />
+            <IconSymbol name="creditcard.fill" size={40} color="#199BCF" />
           </View>
           <Text style={[styles.emptyTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>No Payment History</Text>
           <Text style={[styles.emptyText, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>
@@ -266,16 +285,16 @@ export default function PaymentsTab({ payments = [], loading = false }: Payments
       >
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { 
-            backgroundColor: Colors[colorScheme ?? 'light'].cardBackground,
-            borderColor: Colors[colorScheme ?? 'light'].cardBorder 
+            backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+            borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder 
           }]}>
-            <View style={[styles.modalHeader, { borderBottomColor: Colors[colorScheme ?? 'light'].cardBorder }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder }]}>
               <Text style={[styles.modalTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Select Academic Term</Text>
               <TouchableOpacity 
                 style={styles.modalCloseButton}
                 onPress={() => setShowTermModal(false)}
               >
-                <IconSymbol name="xmark" size={18} color={Colors[colorScheme ?? 'light'].textSecondary} />
+                <IconSymbol name="xmark" size={16} color={Colors[colorScheme ?? 'light'].textSecondary} />
               </TouchableOpacity>
             </View>
             
@@ -283,8 +302,8 @@ export default function PaymentsTab({ payments = [], loading = false }: Payments
               <TouchableOpacity
                 style={[
                   styles.termOption,
-                  { borderBottomColor: Colors[colorScheme ?? 'light'].cardBorder },
-                  !selectedTermId && { backgroundColor: Colors[colorScheme ?? 'light'].sectionBackground }
+                  { borderBottomColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder },
+                  !selectedTermId && { backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].sectionBackground }
                 ]}
                 onPress={() => handleTermSelect(undefined)}
               >
@@ -311,8 +330,8 @@ export default function PaymentsTab({ payments = [], loading = false }: Payments
                   key={term.id}
                   style={[
                     styles.termOption,
-                    { borderBottomColor: Colors[colorScheme ?? 'light'].cardBorder },
-                    selectedTermId === term.id && { backgroundColor: Colors[colorScheme ?? 'light'].sectionBackground }
+                    { borderBottomColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder },
+                    selectedTermId === term.id && { backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].sectionBackground }
                   ]}
                   onPress={() => handleTermSelect(term.id)}
                 >
@@ -365,31 +384,26 @@ const styles = StyleSheet.create({
     paddingBottom: 100, // Extra padding for floating tab bar
   },
   summaryCard: {
-    backgroundColor: '#ffffff',
     borderRadius: 12,
-    padding: 20,
+    padding: 16,
     marginTop: 8,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
   },
   summaryHeader: {
-    marginBottom: 16,
+    marginBottom: 12,
   },
   summaryTitleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 3,
   },
   summaryTitle: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: '700',
-    color: '#1A3165',
-    marginLeft: 8,
   },
   summarySubtitle: {
-    fontSize: 14,
-    color: '#6B7280',
+    fontSize: 13,
   },
   summaryGrid: {
     flexDirection: 'row',
@@ -398,17 +412,15 @@ const styles = StyleSheet.create({
   },
   summaryItem: {
     width: '48%',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   summaryLabel: {
-    fontSize: 12,
-    color: '#6B7280',
-    marginBottom: 4,
+    fontSize: 11,
+    marginBottom: 3,
     fontWeight: '500',
   },
   summaryValue: {
-    fontSize: 16,
-    color: '#1A3165',
+    fontSize: 14,
     fontWeight: '700',
   },
   successText: {
@@ -435,21 +447,18 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   termSelector: {
-    marginLeft: 12,
+    marginLeft: 10,
   },
   termSelectorButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F3F4F6',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 6,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
   },
   termSelectorText: {
-    fontSize: 12,
-    color: '#1A3165',
+    fontSize: 11,
     fontWeight: '600',
     marginRight: 4,
   },
@@ -461,46 +470,42 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   paymentCard: {
-    backgroundColor: '#ffffff',
     borderRadius: 12,
-    padding: 20,
+    padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
   },
   paymentHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 16,
+    marginBottom: 14,
   },
   paymentTitleContainer: {
     flex: 1,
   },
   paymentReference: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
-    color: '#1A3165',
-    marginBottom: 4,
+    marginBottom: 3,
   },
   paymentDate: {
-    fontSize: 14,
-    color: '#6B7280',
+    fontSize: 13,
     fontWeight: '500',
   },
   statusBadge: {
     backgroundColor: '#10B981',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 6,
   },
   statusText: {
     color: '#ffffff',
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
   },
   paymentDetails: {
-    gap: 12,
+    gap: 0,
   },
   detailRow: {
     flexDirection: 'row',
@@ -515,14 +520,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   detailLabel: {
-    fontSize: 14,
-    color: '#6B7280',
-    fontWeight: '500',
+    fontSize: 12,
+    fontWeight: '600',
     marginLeft: 6,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   detailValue: {
-    fontSize: 14,
-    color: '#1A3165',
+    fontSize: 13,
     fontWeight: '600',
     flex: 2,
     textAlign: 'right',
@@ -560,39 +565,34 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   emptyState: {
-    backgroundColor: '#ffffff',
     borderRadius: 12,
-    padding: 32,
+    padding: 24,
     alignItems: 'center',
     marginTop: 12,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
   },
   emptyIconContainer: {
-    marginBottom: 16,
+    marginBottom: 12,
   },
   emptyTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
-    color: '#1A3165',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   emptyText: {
-    fontSize: 14,
-    color: '#6B7280',
+    fontSize: 13,
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 18,
   },
   // Modal styles
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
   },
   modalContent: {
-    backgroundColor: '#ffffff',
     borderRadius: 12,
     width: '100%',
     maxHeight: '70%',
@@ -602,27 +602,25 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
+    padding: 16,
     borderBottomWidth: 1,
   },
   modalTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
-    color: '#1A3165',
   },
   modalCloseButton: {
     padding: 4,
   },
   modalCloseText: {
-    fontSize: 18,
-    color: '#6B7280',
+    fontSize: 16,
     fontWeight: '600',
   },
   modalBody: {
     maxHeight: 300,
   },
   termOption: {
-    padding: 16,
+    padding: 14,
     borderBottomWidth: 1,
   },
   termOptionContent: {
@@ -637,28 +635,27 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   termOptionText: {
-    fontSize: 16,
-    color: '#1A3165',
+    fontSize: 15,
     fontWeight: '500',
-    marginBottom: 4,
+    marginBottom: 3,
   },
   termOptionTextSelected: {
     color: '#199BCF',
     fontWeight: '700',
   },
   termOptionCheck: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#199BCF',
     fontWeight: '700',
   },
   unpaidIndicator: {
     backgroundColor: '#FEF2F2',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 4,
     borderWidth: 1,
     borderColor: '#FECACA',
-    marginTop: 4,
+    marginTop: 3,
   },
   unpaidIndicatorContainer: {
     flexDirection: 'row',
@@ -666,13 +663,13 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   unpaidIndicatorText: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#DC2626',
     fontWeight: '600',
     marginLeft: 4,
   },
   unpaidAmountText: {
-    fontSize: 11,
+    fontSize: 10,
     color: '#B91C1C',
     fontWeight: '700',
   },
