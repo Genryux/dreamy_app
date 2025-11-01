@@ -587,10 +587,12 @@ const styles = StyleSheet.create({
   // Modal styles
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
+    // Add backdrop blur effect using built-in React Native capabilities
+    backdropFilter: 'blur(10px)',
   },
   modalContent: {
     borderRadius: 12,

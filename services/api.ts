@@ -1,8 +1,9 @@
+import { getCurrentConfig } from '@/config/api';
 import * as SecureStore from 'expo-secure-store';
 
-// Configuration
-const BASE_URL = 'http://192.168.100.10:8888'; // Update this to match your setup
-// const BASE_URL = 'http://192.168.210.103:8888'; // Update this to match your setup
+// Get current API configuration
+const config = getCurrentConfig();
+const BASE_URL = config.BASE_URL;
 
 
 // Types for our API responses

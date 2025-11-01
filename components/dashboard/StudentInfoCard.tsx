@@ -147,29 +147,33 @@ export default function StudentInfoCard({ student, enrollment, onConfirmEnrollme
           <View style={[styles.evaluationStatusCard, { 
             backgroundColor: enrollment.evaluation_status === 'passed' 
               ? (colorScheme === 'dark' ? '#064E3B' : '#F0FDF4')
+              : enrollment.evaluation_status === 'completed'
+              ? (colorScheme === 'dark' ? '#065F46' : '#F0FDF4')
               : (colorScheme === 'dark' ? '#7F1D1D' : '#FEF2F2'),
-            borderColor: enrollment.evaluation_status === 'passed' ? '#10B981' : '#EF4444'
+            borderColor: enrollment.evaluation_status === 'passed' || enrollment.evaluation_status === 'completed' ? '#10B981' : '#EF4444'
           }]}>
             <View style={styles.evaluationStatusHeader}>
               <IconSymbol 
-                name={enrollment.evaluation_status === 'passed' ? 'checkmark.circle.fill' : 'xmark'} 
+                name={enrollment.evaluation_status === 'passed' || enrollment.evaluation_status === 'completed' ? 'checkmark.circle.fill' : 'xmark'} 
                 size={18} 
-                color={enrollment.evaluation_status === 'passed' ? '#10B981' : '#EF4444'} 
+                color={enrollment.evaluation_status === 'passed' || enrollment.evaluation_status === 'completed' ? '#10B981' : '#EF4444'} 
               />
               <Text style={[styles.evaluationStatusTitle, { 
-                color: enrollment.evaluation_status === 'passed' ? '#10B981' : '#EF4444'
+                color: enrollment.evaluation_status === 'passed' || enrollment.evaluation_status === 'completed' ? '#10B981' : '#EF4444'
               }]}>
-                {enrollment.evaluation_status === 'passed' ? 'PASSED' : 'FAILED'}
+                {enrollment.evaluation_status === 'passed' ? 'PASSED' : enrollment.evaluation_status === 'completed' ? 'COMPLETED' : 'FAILED'}
               </Text>
             </View>
             
             <Text style={[styles.evaluationMessage, { 
-                color: enrollment.evaluation_status === 'passed' 
+                color: enrollment.evaluation_status === 'passed' || enrollment.evaluation_status === 'completed'
                   ? (colorScheme === 'dark' ? '#D1FAE5' : Colors[colorScheme ?? 'light'].textPrimary)
                   : (colorScheme === 'dark' ? '#FEE2E2' : Colors[colorScheme ?? 'light'].textPrimary)
               }]}>
               {enrollment.evaluation_status === 'passed' 
                 ? 'Congratulations! You have successfully passed this academic term and are expected to be promoted to the next school year.'
+                : enrollment.evaluation_status === 'completed'
+                ? 'You have successfully completed this academic term. Great job on your accomplishments!'
                 : 'You have not met the academic requirements for this term and are expected to be retained in the current grade level for the next school year.'
               }
             </Text>
@@ -180,7 +184,7 @@ export default function StudentInfoCard({ student, enrollment, onConfirmEnrollme
                   Additional Notes:
                 </Text>
                 <Text style={[styles.evaluationNotes, { 
-                  color: enrollment.evaluation_status === 'passed' 
+                  color: enrollment.evaluation_status === 'passed' || enrollment.evaluation_status === 'completed'
                     ? (colorScheme === 'dark' ? '#A7F3D0' : Colors[colorScheme ?? 'light'].textPrimary)
                     : (colorScheme === 'dark' ? '#FECACA' : Colors[colorScheme ?? 'light'].textPrimary)
                 }]}>

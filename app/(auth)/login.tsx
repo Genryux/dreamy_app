@@ -75,7 +75,7 @@ export default function LoginScreen() {
           <View style={styles.headerSection}>
             <View style={styles.logoContainer}>
               <Image 
-                source={require('@/assets/images/dream_logo.png')} 
+                source={require('@/assets/images/dreamy_logo.png')} 
                 style={styles.logoImage}
                 resizeMode="contain"
               />

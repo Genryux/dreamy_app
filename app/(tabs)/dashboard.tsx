@@ -1,3 +1,4 @@
+// import { ConfigTest } from '@/components/ConfigTest';
 import NewsCard from '@/components/dashboard/NewsCard';
 import QuickStats from '@/components/dashboard/QuickStats';
 import StudentInfoCard from '@/components/dashboard/StudentInfoCard';
@@ -107,6 +108,9 @@ export default function Dashboard() {
         onConfirmEnrollment={handleConfirmEnrollment}
         confirming={confirming}
       />
+
+      {/* Configuration Test - Remove this after testing */}
+      {/* <ConfigTest /> */}
 
       {/* Recent Activity */}
       <QuickStats activities={data.recent_activity} />

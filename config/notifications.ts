@@ -1,15 +1,18 @@
 // Notification Configuration
 // Update these values to match your Laravel Reverb setup
+import { getCurrentConfig } from './api';
+
+const config = getCurrentConfig();
 
 export const NOTIFICATION_CONFIG = {
   // Laravel Reverb Configuration (From your .env file)
   REVERB_APP_KEY: 'ak6vcojiwfqssrwgezk4', // Your actual REVERB_APP_KEY from .env
-  REVERB_HOST: '192.168.100.10', // Your Laravel server IP (not localhost for mobile)
-  REVERB_PORT: 8080, // Your REVERB_PORT from .env
-  REVERB_SCHEME: 'ws', // 'ws' for local development (http), 'wss' for production with SSL
+  REVERB_HOST: config.REVERB_HOST, // Dynamic host based on current environment
+  REVERB_PORT: config.REVERB_PORT, // Your REVERB_PORT from .env
+  REVERB_SCHEME: config.REVERB_SCHEME, // 'ws' for local development (http), 'wss' for production with SSL
   
   // API Configuration (Should match your Laravel backend)
-  API_BASE_URL: 'http://192.168.100.10:8888', // Update to match your backend URL
+  API_BASE_URL: config.BASE_URL, // Dynamic API URL based on current environment
   
   // Channel Names (Should match your Laravel broadcasting channels)
   CHANNELS: {
