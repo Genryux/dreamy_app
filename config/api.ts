@@ -13,7 +13,7 @@ export const API_CONFIG = {
   PRODUCTION: {
     BASE_URL: 'https://dreamyschoolph.site',
     REVERB_HOST: 'dreamyschoolph.site',
-    REVERB_PORT: 8080,
+    REVERB_PORT: 443,
     REVERB_SCHEME: 'wss',
     name: 'Production (AWS)'
   }

@@ -44,7 +44,7 @@ class NotificationService {
         wsPort: NOTIFICATION_CONFIG.REVERB_PORT,
         wssPort: NOTIFICATION_CONFIG.REVERB_PORT,
         forceTLS: NOTIFICATION_CONFIG.REVERB_SCHEME === 'wss',
-        enabledTransports: [NOTIFICATION_CONFIG.REVERB_SCHEME === 'wss' ? 'wss' : 'ws'],
+        enabledTransports: ['ws', 'wss'],
         cluster: '', // Required by Pusher client but not used by Reverb
         authEndpoint: `${NOTIFICATION_CONFIG.API_BASE_URL}/api/broadcasting/auth`,
         auth: {
@@ -100,6 +100,7 @@ class NotificationService {
         }
       );
 
+      // Listen for 'notification' event (from PrivateImmediateNotification broadcastAs)
       this.publicChannel.bind('notification', (data: any) => {
         console.log('📱 Generic public notification received:', data);
         this.handleNotification(data);
@@ -286,6 +287,7 @@ class NotificationService {
       }
     );
 
+    // Listen for 'notification' event (from PrivateImmediateNotification broadcastAs)
     this.privateChannel.bind('notification', (data: any) => {
       console.log('📱 Generic private notification received:', data);
       this.handleNotification(data);

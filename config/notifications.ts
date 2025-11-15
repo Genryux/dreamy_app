@@ -6,7 +6,7 @@ const config = getCurrentConfig();
 
 export const NOTIFICATION_CONFIG = {
   // Laravel Reverb Configuration (From your .env file)
-  REVERB_APP_KEY: 'ak6vcojiwfqssrwgezk4', // Your actual REVERB_APP_KEY from .env
+  REVERB_APP_KEY: 'ysobotsfpebn3bo0sqzl', // Your actual REVERB_APP_KEY from .env
   REVERB_HOST: config.REVERB_HOST, // Dynamic host based on current environment
   REVERB_PORT: config.REVERB_PORT, // Your REVERB_PORT from .env
   REVERB_SCHEME: config.REVERB_SCHEME, // 'ws' for local development (http), 'wss' for production with SSL
