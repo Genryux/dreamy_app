@@ -28,6 +28,8 @@ export default function StudentInfoCard({ student, enrollment, onConfirmEnrollme
         return '#10B981'; // Green
       case 'pending_confirmation':
         return '#F59E0B'; // Yellow
+      case 'withdrawn':
+        return '#EF4444'; // Red
       default:
         return '#6B7280'; // Gray
     }
@@ -39,6 +41,8 @@ export default function StudentInfoCard({ student, enrollment, onConfirmEnrollme
         return 'Enrolled';
       case 'pending_confirmation':
         return 'Pending Confirmation';
+      case 'withdrawn':
+        return 'Withdrawn';
       case 'not_enrolled':
         return 'Not Enrolled';
       default:
@@ -196,21 +200,27 @@ export default function StudentInfoCard({ student, enrollment, onConfirmEnrollme
         </View>
       )}
 
-      {/* Enrollment Confirmation */}
-      {(enrollment.status === 'pending_confirmation' || enrollment.status === 'not_enrolled') && (
+      {/* Enrollment Confirmation - Show when pending confirmation and period is open */}
+      {enrollment.status === 'pending_confirmation' && enrollment.can_confirm && (
         <View style={[styles.confirmationSection, { 
           backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].sectionBackground,
           borderColor: colorScheme === 'dark' ? '#4A5F8B' : Colors[colorScheme ?? 'light'].cardBorder 
         }]}>
           <View style={styles.confirmationHeader}>
             <IconSymbol name="doc.text.fill" size={16} color={Colors[colorScheme ?? 'light'].tint} />
-            <Text style={[styles.confirmationTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Enrollment Confirmation Required</Text>
+            <Text style={[styles.confirmationTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>
+              Enrollment Confirmation Required
+            </Text>
           </View>
           
           <Text style={[styles.confirmationSubtitle, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>
             Please confirm your enrollment for {enrollment.term} to complete your registration.
           </Text>
-          
+          {enrollment.reenrollment_period?.end_date && (
+            <Text style={[styles.deadlineText, { color: '#F59E0B' }]}>
+              Deadline: {enrollment.reenrollment_period.end_date}
+            </Text>
+          )}
           <TouchableOpacity 
             style={[styles.confirmButton, confirming && styles.confirmButtonDisabled]} 
             onPress={handleConfirmEnrollment}
@@ -221,6 +231,36 @@ export default function StudentInfoCard({ student, enrollment, onConfirmEnrollme
               {confirming ? 'Confirming...' : 'Confirm Enrollment'}
             </Text>
           </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Missed Confirmation - Show when status is withdrawn */}
+      {enrollment.status === 'withdrawn' && (
+        <View style={[styles.confirmationSection, { 
+          backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].sectionBackground,
+          borderColor: colorScheme === 'dark' ? '#4A5F8B' : Colors[colorScheme ?? 'light'].cardBorder 
+        }]}>
+          <View style={styles.confirmationHeader}>
+            <IconSymbol name="doc.text.fill" size={16} color="#EF4444" />
+            <Text style={[styles.confirmationTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>
+              Enrollment Confirmation Missed
+            </Text>
+          </View>
+          
+          <Text style={[styles.confirmationSubtitle, { color: '#EF4444', fontWeight: '500' }]}>
+            You were unable to confirm your enrollment for {enrollment.term} within the re-enrollment period.
+          </Text>
+          <View style={[styles.missedConfirmationBox, {
+            backgroundColor: colorScheme === 'dark' ? '#7F1D1D' : '#FEF2F2',
+            borderColor: '#EF4444'
+          }]}>
+            <IconSymbol name="exclamationmark.triangle.fill" size={18} color="#EF4444" />
+            <Text style={[styles.missedConfirmationText, { 
+              color: colorScheme === 'dark' ? '#FEE2E2' : '#991B1B' 
+            }]}>
+              If you wish to re-enroll, please visit the Registrar's Office or contact the school administration for assistance.
+            </Text>
+          </View>
         </View>
       )}
     </View>
@@ -351,6 +391,25 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
     marginBottom: 12,
+  },
+  deadlineText: {
+    fontSize: 12,
+    fontWeight: '500',
+    marginBottom: 12,
+  },
+  missedConfirmationBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    marginTop: 8,
+    gap: 10,
+  },
+  missedConfirmationText: {
+    fontSize: 13,
+    lineHeight: 18,
+    flex: 1,
   },
   confirmButton: {
     backgroundColor: '#199BCF',

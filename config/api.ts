@@ -21,7 +21,7 @@ export const API_CONFIG = {
 
 // Current environment - change this to switch networks
 // Options: 'HOME' | 'PRODUCTION'
-export const CURRENT_ENV: keyof typeof API_CONFIG = 'PRODUCTION';
+export const CURRENT_ENV: keyof typeof API_CONFIG = 'HOME';
 
 // Get current configuration
 export const getCurrentConfig = () => API_CONFIG[CURRENT_ENV];

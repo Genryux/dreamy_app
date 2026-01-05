@@ -47,6 +47,15 @@ export interface Enrollment {
   confirmed_at: string | null;
   evaluation_status?: 'passed' | 'failed' | null;
   evaluation_notes?: string | null;
+  // Re-enrollment status flags
+  can_confirm?: boolean;
+  reenrollment_period_open?: boolean;
+  missed_confirmation?: boolean;
+  reenrollment_period?: {
+    id: number;
+    name: string;
+    end_date: string;
+  } | null;
 }
 
 export interface NewsItem {
