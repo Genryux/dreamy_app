@@ -6,17 +6,17 @@ import { router } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Alert,
+    Image,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -42,6 +42,13 @@ export default function LoginScreen() {
         await SecureStore.setItemAsync('authToken', data.token);
       }
 
+      // Persist user type for routing
+      const userType = data?.user_type || 'student';
+      await SecureStore.setItemAsync('userType', userType);
+
+      // Determine the correct dashboard route based on user type
+      const dashboardRoute = userType === 'teacher' ? '/(teacher)/dashboard' : '/(tabs)/dashboard';
+
       // Check PIN requirements
       if (data?.pin_setup_required) {
         // User needs to setup PIN
@@ -51,7 +58,7 @@ export default function LoginScreen() {
         router.replace('/auth/pin-verification');
       } else {
         // No PIN required, go to dashboard
-        router.replace('/(tabs)/dashboard');
+        router.replace(dashboardRoute as any);
       }
     } catch (err: any) {
       Alert.alert('Login error', err?.message || 'Unable to login');

@@ -9,7 +9,13 @@ export default function Index() {
       try {
         const token = await SecureStore.getItemAsync('authToken');
         if (token) {
-          router.replace('/(tabs)/dashboard');
+          // Check user type and route accordingly
+          const userType = await SecureStore.getItemAsync('userType');
+          if (userType === 'teacher') {
+            router.replace('/(teacher)/dashboard');
+          } else {
+            router.replace('/(tabs)/dashboard');
+          }
         } else {
           router.replace('/(auth)/login');
         }

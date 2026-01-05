@@ -8,6 +8,15 @@ export const API_CONFIG = {
     REVERB_SCHEME: 'ws',
     name: 'Home WiFi (MAMP)'
   },
+
+  // Laravel Herd (Local Development)
+  HERD: {
+    BASE_URL: 'http://dreamy.test',
+    REVERB_HOST: 'dreamy.test',
+    REVERB_PORT: 8080,
+    REVERB_SCHEME: 'ws',
+    name: 'Laravel Herd (Local)'
+  },
   
   // Production (AWS EC2)
   PRODUCTION: {
@@ -20,7 +29,7 @@ export const API_CONFIG = {
 };
 
 // Current environment - change this to switch networks
-// Options: 'HOME' | 'PRODUCTION'
+// Options: 'HOME' | 'HERD' | 'PRODUCTION'
 export const CURRENT_ENV: keyof typeof API_CONFIG = 'HOME';
 
 // Get current configuration

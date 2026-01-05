@@ -212,7 +212,7 @@ class ApiService {
     current_password: string;
     password: string;
     password_confirmation: string;
-    pin: string;
+    pin?: string;
   }): Promise<any> {
     const data = await this.makeRequest('/auth/change-password', {
       method: 'POST',

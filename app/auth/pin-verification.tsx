@@ -3,6 +3,7 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { apiService } from '@/services/api';
 import { router } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
 import React, { useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -33,8 +34,13 @@ export default function PinVerificationScreen() {
         pin: pin,
       });
 
-      // PIN verified successfully, navigate to dashboard
-      router.replace('/(tabs)/dashboard');
+      // PIN verified successfully, navigate to dashboard based on user type
+      const userType = await SecureStore.getItemAsync('userType');
+      if (userType === 'teacher') {
+        router.replace('/(teacher)/dashboard');
+      } else {
+        router.replace('/(tabs)/dashboard');
+      }
     } catch (error: any) {
       const newAttempts = attempts + 1;
       setAttempts(newAttempts);

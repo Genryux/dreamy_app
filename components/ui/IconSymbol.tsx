@@ -69,6 +69,10 @@ const MAPPING = {
   'arrow.right.square.fill': 'login',
   'eye.fill': 'visibility',
   'eye.slash.fill': 'visibility-off',
+  'number.square.fill': 'pin',
+  'clock': 'access-time',
+  'exclamationmark.triangle.fill': 'warning',
+  'newspaper': 'article',
 } as IconMapping;
 
 /**

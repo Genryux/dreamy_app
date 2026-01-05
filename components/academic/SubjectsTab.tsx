@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
   detailRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
     paddingVertical: 10,
     borderBottomWidth: 1,
     width: '100%',
@@ -339,6 +339,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     lineHeight: 18,
     textAlign: 'right',
+    flex: 1,
+    marginLeft: 8,
+    flexWrap: 'wrap',
   },
   emptyState: {
     borderRadius: 12,

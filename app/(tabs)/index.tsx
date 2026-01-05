@@ -85,21 +85,22 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   header: {
-    paddingTop: 16,
+    paddingTop: 20,
     paddingHorizontal: 20,
-    paddingBottom: 16,
+    paddingBottom: 20,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: '700',
-    marginBottom: 4,
+    marginBottom: 6,
   },
   headerSubtitle: {
     fontSize: 14,
+    fontWeight: '500',
   },
   tabContainer: {
     flexDirection: 'row',
-    marginHorizontal: 16,
+    marginHorizontal: 20,
     borderRadius: 12,
     padding: 4,
     borderWidth: 1,

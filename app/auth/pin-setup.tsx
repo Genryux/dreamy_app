@@ -3,6 +3,7 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { apiService } from '@/services/api';
 import { router } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
 import React, { useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -39,6 +40,10 @@ export default function PinSetupScreen() {
         pin_confirmation: confirmPin,
       });
 
+      // Get user type for proper routing
+      const userType = await SecureStore.getItemAsync('userType');
+      const dashboardRoute = userType === 'teacher' ? '/(teacher)/dashboard' : '/(tabs)/dashboard';
+
       Alert.alert(
         'Success',
         'PIN setup successfully! You can now use this PIN for secure access.',
@@ -47,7 +52,7 @@ export default function PinSetupScreen() {
             text: 'Continue',
             onPress: () => {
               // Navigate to dashboard
-              router.replace('/(tabs)/dashboard');
+              router.replace(dashboardRoute as any);
             },
           },
         ]
