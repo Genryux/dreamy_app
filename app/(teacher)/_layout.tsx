@@ -71,6 +71,13 @@ export default function TeacherTabLayout() {
         }}
       />
       <Tabs.Screen
+        name="history"
+        options={{
+          title: 'History',
+          tabBarIcon: ({ color }) => <IconSymbol size={24} name="clock.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
@@ -86,6 +93,12 @@ export default function TeacherTabLayout() {
       />
       <Tabs.Screen
         name="class/[id]/student/[studentId]"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="history/[studentSubjectId]"
         options={{
           href: null,
         }}

@@ -122,6 +122,9 @@ export interface StudentDetailsData {
   enrollment: {
     evaluation_status: string;
     subject_name: string;
+    remedial_status?: string | null;
+    remedial_deadline?: string | null;
+    is_remedial_status_finalized?: boolean;
   };
   guardian_info: {
     father_name: string | null;
@@ -146,6 +149,54 @@ export interface EvaluateStudentResponse {
     status: 'passed' | 'failed';
     evaluated_at: string;
   };
+}
+
+export interface TeachingHistoryStudent {
+  student_subject_id: number;
+  student_id: number;
+  name: string;
+  lrn: string | null;
+  evaluation_status: string | null;
+  remedial_status: string | null;
+  remedial_deadline: string | null;
+  is_remedial_status_finalized: boolean;
+  subject_name: string;
+  section_name: string;
+  academic_term: string;
+}
+
+export interface TeachingHistoryItem {
+  subject_id: number | null;
+  subject_name: string;
+  section_name: string | null;
+  academic_term: string | null;
+  students: TeachingHistoryStudent[];
+}
+
+export interface TeachingHistoryResponse {
+  success: boolean;
+  data: TeachingHistoryItem[];
+}
+
+export interface StudentSubjectHistoryData {
+  student_subject_id: number;
+  student_id: number;
+  student_name: string;
+  lrn: string | null;
+  subject_name: string;
+  section_name: string | null;
+  academic_term: string | null;
+  evaluation_status: string | null;
+  remedial_status: string | null;
+  remedial_deadline: string | null;
+  is_remedial_status_finalized: boolean;
+  finalized_at: string | null;
+}
+
+export interface StudentSubjectHistoryResponse {
+  success: boolean;
+  data: StudentSubjectHistoryData;
+  message?: string;
 }
 
 export interface TeacherProfile {
@@ -284,6 +335,50 @@ class TeacherApiService {
       body: JSON.stringify({ evaluations }),
     });
     return this.handleResponse(response);
+  }
+
+  /**
+   * Get historical subjects and students handled by the teacher
+   * Groups by subject/section/term to reduce duplicate student rows
+   */
+  async getTeachingHistory(): Promise<TeachingHistoryItem[]> {
+    const headers = await this.getAuthHeader();
+    const response = await fetch(`${BASE_URL}/api/teacher/teaching-history`, {
+      method: 'GET',
+      headers,
+    });
+    const result = await this.handleResponse<TeachingHistoryResponse>(response);
+    return result.data;
+  }
+
+  /**
+   * Get a single student_subject history entry
+   */
+  async getStudentSubjectHistory(studentSubjectId: number): Promise<StudentSubjectHistoryData> {
+    const headers = await this.getAuthHeader();
+    const response = await fetch(`${BASE_URL}/api/teacher/student-subjects/${studentSubjectId}`, {
+      method: 'GET',
+      headers,
+    });
+    const result = await this.handleResponse<StudentSubjectHistoryResponse>(response);
+    return result.data;
+  }
+
+  /**
+   * Update remedial status for a student_subject
+   */
+  async updateRemedialStatus(
+    studentSubjectId: number,
+    status: 'failed' | 'cleared'
+  ): Promise<StudentSubjectHistoryData> {
+    const headers = await this.getAuthHeader();
+    const response = await fetch(`${BASE_URL}/api/teacher/student-subjects/${studentSubjectId}/remedial`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ status }),
+    });
+    const result = await this.handleResponse<StudentSubjectHistoryResponse>(response);
+    return result.data;
   }
 
   /**

@@ -267,6 +267,15 @@ export default function StudentDetailScreen() {
             </Text>
           </View>
 
+          {data?.enrollment.evaluation_status === 'failed' && (
+            <View style={[styles.remedialBadge, { backgroundColor: '#FEE2E2' }]}> 
+              <IconSymbol name="exclamationmark.circle.fill" size={14} color="#B91C1C" />
+              <Text style={[styles.remedialText, { color: '#B91C1C' }]}>
+                {data?.enrollment.remedial_status ? data.enrollment.remedial_status.toUpperCase() : 'FAILED'}
+              </Text>
+            </View>
+          )}
+
           <Text style={[styles.subjectLabel, { color: Colors[colorScheme ?? 'light'].textTertiary }]}>
             Subject: {data?.enrollment.subject_name}
           </Text>
@@ -541,6 +550,19 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 16,
     marginBottom: 16,
+  },
+  remedialBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    marginTop: 10,
+  },
+  remedialText: {
+    fontSize: 13,
+    fontWeight: '700',
   },
   sectionTitle: {
     fontSize: 16,

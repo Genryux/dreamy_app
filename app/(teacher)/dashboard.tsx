@@ -108,11 +108,17 @@ export default function TeacherDashboard() {
 
   const { month, day, dayName } = parseDate();
 
-  const displaySchedule = filter === 'today' ? data?.today_schedule : allClasses;
+  const displaySchedule = filter === 'today'
+    ? data?.today_schedule
+    : (allClasses.length > 0 ? allClasses : data?.today_schedule);
 
   const handleFilterChange = (newFilter: 'today' | 'all') => {
     setFilter(newFilter);
     setShowFilterMenu(false);
+
+    if (newFilter === 'all' && allClasses.length === 0) {
+      fetchAllClasses();
+    }
   };
 
   if (loading && !data) {
