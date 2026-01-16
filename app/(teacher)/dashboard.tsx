@@ -3,7 +3,7 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { ScheduleItem, teacherApiService, TeacherDashboardData } from '@/services/teacherApi';
 import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
     ActivityIndicator,
     RefreshControl,
@@ -22,6 +22,7 @@ export default function TeacherDashboard() {
   const [filter, setFilter] = useState<'today' | 'all'>('today');
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [allClasses, setAllClasses] = useState<ScheduleItem[]>([]);
+  const lastTermRef = useRef<string | null>(null);
   const colorScheme = useColorScheme();
 
   const fetchDashboard = async () => {
@@ -30,6 +31,11 @@ export default function TeacherDashboard() {
       setError(null);
       const response = await teacherApiService.getDashboard();
       setData(response);
+      // If term changed, clear allClasses cache
+      if (lastTermRef.current && response.academic_term !== lastTermRef.current) {
+        setAllClasses([]);
+      }
+      lastTermRef.current = response.academic_term;
     } catch (err: any) {
       setError(err.message || 'Failed to load dashboard');
     } finally {
@@ -50,6 +56,15 @@ export default function TeacherDashboard() {
     fetchDashboard();
     fetchAllClasses();
   }, []);
+
+  // Watch for academic term change and clear allClasses if term changes
+  useEffect(() => {
+    if (data && lastTermRef.current && data.academic_term !== lastTermRef.current) {
+      setAllClasses([]);
+      fetchAllClasses();
+      lastTermRef.current = data.academic_term;
+    }
+  }, [data?.academic_term]);
 
   const parseTime = (timeStr: string | null): number => {
     if (!timeStr) return -1;

@@ -1,202 +1,338 @@
-import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useSubjectsData } from '@/hooks/useAcademic';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import {
-    ActivityIndicator,
-    RefreshControl,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View,
+  ActivityIndicator,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
-interface Subject {
+type StatusFilter = 'enrolled' | 'taken';
+
+type SubjectRecord = {
   id: number;
-  name: string;
-  code: string;
-  teacher: string;
-  schedule: string;
-  room: string;
-}
+  subject_name: string;
+  teacher_name?: string | null;
+  days_of_week?: string[] | null;
+  time_display?: string | null;
+  room?: string | null;
+  status?: string | null;
+  evaluation_status?: string | null;
+  remedial_status?: string | null;
+  remedial_deadline?: string | null;
+  academic_term?: string | null;
+};
 
-interface SubjectsTabProps {
-  subjects?: Subject[];
-  loading?: boolean;
-}
-
-export default function SubjectsTab({ subjects = [], loading = false }: SubjectsTabProps) {
+export default function SubjectsTab() {
   const { data: apiData, loading: apiLoading, error, refresh } = useSubjectsData();
   const colorScheme = useColorScheme();
+  const [filter, setFilter] = useState<StatusFilter>('enrolled');
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  // Mock data for fallback
-  const mockSubjects: Subject[] = [
-    {
-      id: 1,
-      name: 'Mathematics',
-      code: 'MATH101',
-      teacher: 'Dr. Sarah Johnson',
-      schedule: 'Mon, Wed, Fri 9:00-10:00 AM',
-      room: 'Room 201',
-    },
-    {
-      id: 2,
-      name: 'English Literature',
-      code: 'ENG102',
-      teacher: 'Prof. Michael Brown',
-      schedule: 'Tue, Thu 2:00-3:30 PM',
-      room: 'Room 105',
-    },
-    {
-      id: 3,
-      name: 'Science',
-      code: 'SCI103',
-      teacher: 'Dr. Emily Davis',
-      schedule: 'Mon, Wed 11:00-12:00 PM',
-      room: 'Lab 301',
-    },
-  ];
+  // Promotion status from student's academic_status (null = Not Evaluated)
+  const academicStatus = apiData?.academic_status;
+  const getPromotionDisplay = () => {
+    if (academicStatus === null || academicStatus === undefined) {
+      return { text: 'Not Evaluated', color: Colors[colorScheme ?? 'light'].textSecondary };
+    }
+    const status = String(academicStatus).toLowerCase();
+    if (status === 'passed' || status === 'completed') {
+      return { text: `Eligible - ${academicStatus}`, color: '#22C55E' };
+    }
+    return { text: `Not Eligible - ${academicStatus}`, color: '#EF4444' };
+  };
+  const promoDisplay = getPromotionDisplay();
 
-  // Use API data if available, otherwise fall back to props or show empty state
-  const displaySubjects = apiData?.subjects?.length > 0 
-    ? apiData.subjects 
-    : subjects.length > 0 
-    ? subjects 
-    : []; // Empty array instead of mock data
+  const subjects: SubjectRecord[] = useMemo(() => {
+    if (!apiData?.subjects) return [];
+    return apiData.subjects.map((item: any, idx: number) => ({
+      id: item.id ?? idx,
+      subject_name: item.subject_name ?? item.name ?? 'Subject',
+      teacher_name: item.teacher_name ?? item.teacher ?? null,
+      days_of_week: item.days_of_week ?? null,
+      time_display: item.time_display ?? item.schedule ?? null,
+      room: item.room ?? null,
+      status: (item.status || '').toLowerCase() || null,
+      evaluation_status: item.evaluation_status ?? null,
+      remedial_status: item.remedial_status ?? null,
+      remedial_deadline: item.remedial_deadline ?? null,
+      academic_term: item.academic_term ?? null,
+    }));
+  }, [apiData]);
 
-  const sectionInfo = apiData?.section_info || {
-    name: '-',
-    grade_level: '-',
-    academic_term: '-',
+  const filteredSubjects = useMemo(() => {
+    return subjects.filter((s) => {
+      const status = (s.status || '').toLowerCase();
+      if (filter === 'enrolled') {
+        return status === 'enrolled' || !status;
+      }
+      return status === 'taken';
+    });
+  }, [subjects, filter]);
+
+  const isLoading = apiLoading;
+
+
+
+  const renderBadge = (label: string, tone: 'success' | 'error' | 'warning' | 'info') => {
+    const tones = {
+      success: { bg: '#DCFCE7', fg: '#15803D' },
+      error: { bg: '#FEE2E2', fg: '#B91C1C' },
+      warning: { bg: '#FEF3C7', fg: '#92400E' },
+      info: { bg: `${Colors[colorScheme ?? 'light'].tint}1A`, fg: Colors[colorScheme ?? 'light'].tint },
+    };
+    const t = tones[tone];
+    return (
+      <View style={[styles.badge, { backgroundColor: t.bg }]}>
+        <Text style={[styles.badgeText, { color: t.fg }]}>{label}</Text>
+      </View>
+    );
   };
 
-  const isLoading = loading || apiLoading;
+  // Subject card matching design: subject name + eval badge on top, teacher, schedule, remedial if failed
+  const renderSubjectCard = (subject: SubjectRecord) => {
+    const evalStatus = (subject.evaluation_status || '').toLowerCase();
+    const remedialStatus = (subject.remedial_status || '').toLowerCase();
+    const isPassed = evalStatus === 'passed';
+    const isFailed = evalStatus === 'failed';
+    const isCleared = remedialStatus === 'cleared';
 
-  const renderSubjectCard = (subject: Subject) => (
-    <View key={subject.id} style={[styles.subjectCard, { 
-      backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
-      borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder 
-    }]}>
-      <View style={styles.subjectHeader}>
-        <View style={styles.subjectTitleContainer}>
-          <View style={[styles.subjectIconContainer, { backgroundColor: '#199BCF' }]}>
-            <IconSymbol name="book.fill" size={12} color="#FFFFFF" />
-          </View>
-          <View style={styles.subjectTitleText}>
-            <Text style={[styles.subjectName, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>{subject.name || '-'}</Text>
-            <Text style={[styles.subjectCode, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>{subject.code || '-'}</Text>
-          </View>
-        </View>
-      </View>
-      
-      <View style={styles.subjectDetails}>
-        <View style={[styles.detailRow, { borderBottomColor: colorScheme === 'dark' ? '#3A4F7B' : '#F3F4F6' }]}>
-          <View style={styles.detailLabelContainer}>
-            <View style={[styles.detailIconContainer, { backgroundColor: '#199BCF' }]}>
-              <IconSymbol name="person.fill" size={10} color="#FFFFFF" />
-            </View>
-            <Text style={[styles.detailLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Teacher</Text>
-          </View>
-          <Text style={[styles.detailValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{subject.teacher || '-'}</Text>
-        </View>
-        
-        <View style={[styles.detailRow, { borderBottomColor: colorScheme === 'dark' ? '#3A4F7B' : '#F3F4F6' }]}>
-          <View style={styles.detailLabelContainer}>
-            <View style={[styles.detailIconContainer, { backgroundColor: '#199BCF' }]}>
-              <IconSymbol name="clock.fill" size={10} color="#FFFFFF" />
-            </View>
-            <Text style={[styles.detailLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Schedule</Text>
-          </View>
-          <Text style={[styles.detailValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{subject.schedule || '-'}</Text>
-        </View>
-        
-        <View style={[styles.detailRow, { borderBottomColor: 'transparent' }]}>
-          <View style={styles.detailLabelContainer}>
-            <View style={[styles.detailIconContainer, { backgroundColor: '#199BCF' }]}>
-              <IconSymbol name="building.2.fill" size={10} color="#FFFFFF" />
-            </View>
-            <Text style={[styles.detailLabel, { color: Colors[colorScheme ?? 'light'].textLabel }]}>Room</Text>
-          </View>
-          <Text style={[styles.detailValue, { color: Colors[colorScheme ?? 'light'].textValue }]}>{subject.room || '-'}</Text>
-        </View>
-      </View>
-    </View>
-  );
+    const formatDay = (d: any) => {
+      if (!d) return '';
+      const s = String(d).trim().toLowerCase();
+      const map: Record<string, string> = {
+        monday: 'Mon',
+        tuesday: 'Tue',
+        wednesday: 'Wed',
+        thursday: 'Thu',
+        friday: 'Fri',
+        saturday: 'Sat',
+        sunday: 'Sun',
+      };
+      return map[s] ?? (s.length <= 3 ? s.toUpperCase() : s.charAt(0).toUpperCase() + s.slice(1));
+    };
 
-  if (isLoading && !displaySubjects.length) {
+    const daysArrayNormalized: string[] = Array.isArray(subject.days_of_week)
+      ? subject.days_of_week
+      : subject.days_of_week
+      ? String(subject.days_of_week).split(/,\s*/)
+      : [];
+
+    const daysText = daysArrayNormalized.length
+      ? daysArrayNormalized.map(formatDay).join(', ')
+      : 'Days TBA';
+    const timeText = subject.time_display || 'Time TBA';
+
+    return (
+      <View
+        key={`subject-${subject.id}-${filter}`}
+        style={[
+          styles.card,
+          {
+            backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+            borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder,
+          },
+        ]}
+      >
+        {/* Header: Subject name + Evaluation badge */}
+        <View style={styles.cardHeader}>
+          <Text style={[styles.subjectName, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>
+            {subject.subject_name}
+          </Text>
+          {isPassed && renderBadge('Passed ✓', 'success')}
+          {isFailed && renderBadge('Failed ✕', 'error')}
+          {!isPassed && !isFailed && renderBadge('Pending', 'info')}
+        </View>
+
+        {/* Teacher name */}
+        <Text style={[styles.teacherName, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>
+          {subject.teacher_name || 'Teacher TBA'}
+        </Text>
+
+        {/* Schedule: Time */}
+        {/* Schedule: Days + Remedial badge if cleared */}
+          {/* Schedule/time and days - only for non-taken (current/enrolled) subjects */}
+          {((subject.status || '').toLowerCase() !== 'taken') && (
+            <>
+              <Text style={[styles.scheduleTime, { color: Colors[colorScheme ?? 'light'].textSecondary }]}> 
+                {timeText}
+              </Text>
+
+              <View style={styles.cardFooter}>
+                <Text style={[styles.scheduleDays, { color: Colors[colorScheme ?? 'light'].textSecondary }]}> 
+                  {daysText}
+                </Text>
+                <View style={{ alignItems: 'flex-end' }}>
+                  {isFailed && remedialStatus && (
+                    isCleared ? renderBadge('Cleared ✓', 'success') : renderBadge('Failed ✕', 'error')
+                  )}
+                  {isFailed && subject.remedial_deadline && (
+                    <Text style={{ fontSize: 12, color: Colors[colorScheme ?? 'light'].textSecondary, marginTop: 2 }}>
+                      Remedial Deadline: {new Date(subject.remedial_deadline).toLocaleDateString()}
+                    </Text>
+                  )}
+                </View>
+              </View>
+            </>
+          )}
+
+          {/* For taken subjects we still show remedial status and deadline (if any), but hide schedule/day */}
+          {((subject.status || '').toLowerCase() === 'taken') && isFailed && remedialStatus && (
+            <View style={{ marginTop: 8 }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center' }}>
+                {isCleared ? renderBadge('Cleared ✓', 'success') : renderBadge('Failed ✕', 'error')}
+              </View>
+            </View>
+          )}
+      </View>
+    );
+  };
+
+  if (isLoading && !subjects.length) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={Colors[colorScheme ?? 'light'].tint} />
-        <Text style={[styles.loadingText, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>Loading subjects...</Text>
+        <Text style={[styles.loadingText, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>
+          Loading subjects...
+        </Text>
       </View>
     );
   }
 
-  if (error && !displaySubjects.length) {
+  if (error && !subjects.length) {
     return (
       <View style={styles.errorContainer}>
-        <Text style={[styles.errorTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Unable to load subjects</Text>
+        <Text style={[styles.errorTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>
+          Unable to load subjects
+        </Text>
         <Text style={[styles.errorText, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>{error}</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView 
-      style={styles.container} 
+    <ScrollView
+      style={styles.container}
       contentContainerStyle={styles.contentContainer}
-      refreshControl={
-        <RefreshControl refreshing={isLoading} onRefresh={refresh} />
-      }
+      refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refresh} />}
     >
-      {/* Current Section Info */}
-      <View style={[styles.sectionInfoCard, { 
-        backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
-        borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder 
-      }]}>
-        <View style={styles.sectionInfoHeader}>
-          <View style={styles.sectionInfoTitleContainer}>
-            <View style={[styles.sectionInfoIconContainer, { backgroundColor: '#199BCF' }]}>
-              <IconSymbol name="book.fill" size={14} color="#FFFFFF" />
+      {/* Promotion Eligibility Banner */}
+      <View
+        style={[
+          styles.promoCard,
+          {
+            backgroundColor: colorScheme === 'dark' ? '#1F3A68' : `${Colors[colorScheme ?? 'light'].tint}14`,
+            borderColor: colorScheme === 'dark' ? '#345589' : `${Colors[colorScheme ?? 'light'].tint}40`,
+          },
+        ]}
+      >
+        <Text style={[styles.promoLabel, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>
+          Promotion Eligibility
+        </Text>
+        <Text style={[styles.promoValue, { color: promoDisplay.color }]}>{promoDisplay.text}</Text>
+      </View>
+
+      {/* Dropdown Row with "Your Subjects" label */}
+      <View style={styles.filterContainer}>
+        <Text style={[styles.filterLabel, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Your Subjects</Text>
+        <View
+          style={[
+            styles.dropdownWrapper,
+            {
+              backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+              borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder,
+            },
+          ]}
+        >
+          <TouchableOpacity
+            style={styles.dropdownTrigger}
+            onPress={() => setDropdownOpen((prev) => !prev)}
+            activeOpacity={0.8}
+          >
+            <Text style={[styles.dropdownText, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>
+              {filter === 'enrolled' ? 'Enrolled' : 'Taken'}
+            </Text>
+            <Text style={[styles.chevron, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>
+              {dropdownOpen ? '▲' : '▼'}
+            </Text>
+          </TouchableOpacity>
+
+          {dropdownOpen && (
+            <View
+              style={[
+                styles.dropdownList,
+                {
+                  backgroundColor: colorScheme === 'dark' ? '#24385F' : '#FFFFFF',
+                  borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder,
+                },
+              ]}
+            >
+              {(['enrolled', 'taken'] as StatusFilter[]).map((f) => (
+                <TouchableOpacity
+                  key={f}
+                  style={[styles.dropdownItem, filter === f && styles.dropdownItemActive]}
+                  onPress={() => {
+                    setFilter(f);
+                    setDropdownOpen(false);
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.dropdownItemText,
+                      { color: filter === f ? Colors[colorScheme ?? 'light'].tint : Colors[colorScheme ?? 'light'].textPrimary },
+                    ]}
+                  >
+                    {f === 'enrolled' ? 'Enrolled' : 'Taken'}
+                  </Text>
+                </TouchableOpacity>
+              ))}
             </View>
-            <Text style={[styles.sectionInfoTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Current Section</Text>
-          </View>
-        </View>
-        
-        <View style={styles.sectionInfoContent}>
-          <View style={styles.sectionInfoMain}>
-            <Text style={[styles.sectionInfoText, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>
-              {sectionInfo.grade_level} - {sectionInfo.name}
-            </Text>
-            <Text style={[styles.sectionInfoSubtext, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>
-              {sectionInfo.academic_term}
-            </Text>
-          </View>
+          )}
         </View>
       </View>
 
-      {/* Subjects List */}
-      <View style={styles.subjectsHeader}>
-        <Text style={[styles.subjectsTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Your Subjects</Text>
-        <Text style={[styles.subjectsSubtitle, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>{displaySubjects.length} subjects enrolled</Text>
+      {/* Guidance Note */}
+      <View
+        style={[
+          styles.noteCard,
+          {
+            backgroundColor: colorScheme === 'dark' ? '#1E2F52' : `${Colors[colorScheme ?? 'light'].tint}0D`,
+            borderColor: colorScheme === 'dark' ? '#2A3F6B' : `${Colors[colorScheme ?? 'light'].tint}26`,
+          },
+        ]}
+      >
+        <Text style={[styles.noteText, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>
+          For failed subjects, talk to your teacher for possible remedial classes.
+        </Text>
       </View>
 
-      {displaySubjects.length > 0 ? (
-        <View style={styles.subjectsList}>
-          {displaySubjects.map(renderSubjectCard)}
+      {/* Subject Cards */}
+      {filteredSubjects.length > 0 ? (
+        <View style={styles.cardsList}>
+          {filteredSubjects.map((subject) => renderSubjectCard(subject))}
         </View>
       ) : (
-        <View style={[styles.emptyState, { 
-          backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
-          borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder 
-        }]}>
-          <View style={styles.emptyIconContainer}>
-            <IconSymbol name="book.fill" size={48} color="#199BCF" />
-          </View>
-          <Text style={[styles.emptyTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>No Subjects Assigned</Text>
+        <View
+          style={[
+            styles.emptyState,
+            {
+              backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+              borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder,
+            },
+          ]}
+        >
+          <Text style={[styles.emptyTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>
+            No {filter} subjects
+          </Text>
           <Text style={[styles.emptyText, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>
-            Subjects will appear here once they are assigned to your section.
+            {filter === 'enrolled'
+              ? 'You have no enrolled subjects for the current term.'
+              : 'You have no taken subjects from previous terms.'}
           </Text>
         </View>
       )}
@@ -211,152 +347,155 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     paddingHorizontal: 16,
-    paddingBottom: 100, // Extra padding for floating tab bar
+    paddingTop: 16,
+    paddingBottom: 120,
+    gap: 14,
   },
-  sectionInfoCard: {
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 8,
-    marginBottom: 20,
-    borderWidth: 1,
-  },
-  sectionInfoHeader: {
-    marginBottom: 12,
-  },
-  sectionInfoTitleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  sectionInfoIconContainer: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+  promoCard: {
+    borderRadius: 16,
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+    borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 8,
   },
-  sectionInfoTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  sectionInfoContent: {
-    flex: 1,
-  },
-  sectionInfoMain: {
-    flex: 1,
-  },
-  sectionInfoText: {
-    fontSize: 17,
-    fontWeight: '700',
-    marginBottom: 4,
-    lineHeight: 22,
-  },
-  sectionInfoSubtext: {
-    fontSize: 13,
-    lineHeight: 18,
-    fontWeight: '500',
-  },
-  subjectsHeader: {
-    marginBottom: 16,
-  },
-  subjectsTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    marginBottom: 4,
-  },
-  subjectsSubtitle: {
+  promoLabel: {
     fontSize: 14,
-  },
-  subjectsList: {
-    gap: 12,
-  },
-  subjectCard: {
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-  },
-  subjectHeader: {
-    marginBottom: 14,
-  },
-  subjectTitleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  subjectIconContainer: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 10,
-  },
-  subjectTitleText: {
-    flex: 1,
-  },
-  subjectName: {
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 2,
-    lineHeight: 20,
-  },
-  subjectCode: {
-    fontSize: 13,
-    fontWeight: '500',
-    lineHeight: 16,
-  },
-  subjectDetails: {
-    gap: 0,
-  },
-  detailRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    width: '100%',
-  },
-  detailLabelContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  detailIconContainer: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 6,
-  },
-  detailLabel: {
-    fontSize: 12,
     fontWeight: '600',
+    marginBottom: 6,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
-  detailValue: {
-    fontSize: 13,
+  promoValue: {
+    fontSize: 20,
+    fontWeight: '800',
+  },
+  filterContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  filterLabel: {
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  dropdownWrapper: {
+    borderRadius: 10,
+    borderWidth: 1,
+    minWidth: 120,
+    position: 'relative',
+    zIndex: 10,
+  },
+  dropdownTrigger: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+  },
+  dropdownText: {
+    fontSize: 14,
     fontWeight: '600',
-    lineHeight: 18,
-    textAlign: 'right',
-    flex: 1,
+  },
+  chevron: {
+    fontSize: 10,
     marginLeft: 8,
+  },
+  dropdownList: {
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    right: 0,
+    marginTop: 4,
+    borderRadius: 10,
+    borderWidth: 1,
+    overflow: 'hidden',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+  },
+  dropdownItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+  },
+  dropdownItemActive: {
+    backgroundColor: 'rgba(25, 155, 207, 0.1)',
+  },
+  dropdownItemText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  noteCard: {
+    borderRadius: 10,
+    padding: 12,
+    borderWidth: 1,
+  },
+  noteText: {
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  cardsList: {
+    gap: 12,
+  },
+  card: {
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  subjectName: {
+    fontSize: 17,
+    fontWeight: '700',
+    flex: 1,
+    marginRight: 10,
+  },
+  teacherName: {
+    fontSize: 14,
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  scheduleTime: {
+    fontSize: 13,
+    marginBottom: 2,
+  },
+  scheduleDays: {
+    fontSize: 13,
+    flex: 1,
     flexWrap: 'wrap',
+    marginRight: 8,
+  },
+  cardFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  badge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+  },
+  badgeText: {
+    fontSize: 11,
+    fontWeight: '700',
   },
   emptyState: {
     borderRadius: 12,
     padding: 24,
     alignItems: 'center',
-    marginTop: 12,
     borderWidth: 1,
-  },
-  emptyIconContainer: {
-    marginBottom: 12,
+    gap: 8,
   },
   emptyTitle: {
     fontSize: 16,
     fontWeight: '700',
-    marginBottom: 6,
   },
   emptyText: {
     fontSize: 13,
@@ -365,29 +504,29 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 40,
+    justifyContent: 'center',
+    paddingVertical: 80,
   },
   loadingText: {
     marginTop: 12,
-    fontSize: 16,
+    fontSize: 14,
   },
   errorContainer: {
     flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 40,
-    paddingHorizontal: 20,
+    justifyContent: 'center',
+    paddingVertical: 80,
+    paddingHorizontal: 16,
   },
   errorTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#EF4444',
+    fontWeight: '700',
     marginBottom: 8,
   },
   errorText: {
     fontSize: 14,
     textAlign: 'center',
+    lineHeight: 20,
   },
 });
