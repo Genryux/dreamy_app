@@ -123,6 +123,19 @@ export default function TeacherDashboard() {
 
   const { month, day, dayName } = parseDate();
 
+  const getStatusColor = (status?: string | null) => {
+    switch (status) {
+      case 'Closing':
+        return '#F59E0B';
+      case 'Upcoming':
+        return '#6366F1';
+      case 'Ongoing':
+        return '#10B981';
+      default:
+        return Colors[colorScheme ?? 'light'].textTertiary;
+    }
+  };
+
   const displaySchedule = filter === 'today'
     ? data?.today_schedule
     : (allClasses.length > 0 ? allClasses : data?.today_schedule);
@@ -231,6 +244,25 @@ export default function TeacherDashboard() {
               <IconSymbol name="person.fill" size={20} color="#FFFFFF" />
             </View>
           </TouchableOpacity>
+        </View>
+
+        <View style={[styles.termPill, {
+          backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[colorScheme ?? 'light'].cardBackground,
+          borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder,
+        }]}
+        >
+          <Text style={[styles.termLabel, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>Active Term</Text>
+          <View style={styles.termRow}>
+            <Text style={[styles.termText, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>
+              {data?.academic_term || 'N/A'}
+            </Text>
+            <View style={[styles.statusBadge, { borderColor: getStatusColor(data?.academic_term_status) }]}>
+              <View style={[styles.statusDot, { backgroundColor: getStatusColor(data?.academic_term_status) }]} />
+              <Text style={[styles.statusText, { color: getStatusColor(data?.academic_term_status) }]}>
+                {data?.academic_term_status || 'Unknown'}
+              </Text>
+            </View>
+          </View>
         </View>
 
         {/* Date Display */}
@@ -448,6 +480,47 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  termPill: {
+    alignSelf: 'center',
+    alignItems: 'center',
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    marginBottom: 20,
+  },
+  termLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  termText: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  termRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  statusText: {
+    fontSize: 11,
+    fontWeight: '700',
   },
   dateSection: {
     alignItems: 'center',

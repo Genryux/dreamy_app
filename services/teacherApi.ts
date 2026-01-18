@@ -15,6 +15,7 @@ export interface TeacherDashboardData {
   current_date: string;
   current_day: string;
   academic_term: string;
+  academic_term_status?: string | null;
   statistics: {
     total_sections: number;
     total_subjects: number;
@@ -134,6 +135,11 @@ export interface StudentDetailsData {
     guardian_name: string | null;
     guardian_contact: string | null;
   };
+  term?: {
+    id?: number | null;
+    semester?: string | null;
+    status?: string | null;
+  };
 }
 
 export interface StudentDetailsResponse {
@@ -191,6 +197,11 @@ export interface StudentSubjectHistoryData {
   remedial_deadline: string | null;
   is_remedial_status_finalized: boolean;
   finalized_at: string | null;
+  current_term?: {
+    id?: number | null;
+    semester?: string | null;
+    status?: string | null;
+  };
 }
 
 export interface StudentSubjectHistoryResponse {

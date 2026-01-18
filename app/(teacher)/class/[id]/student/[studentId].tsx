@@ -227,6 +227,7 @@ export default function StudentDetailScreen() {
 
   const isAlreadyEvaluated = data?.enrollment.evaluation_status === 'passed' || 
                               data?.enrollment.evaluation_status === 'failed';
+  const isTermClosing = data?.term?.status === 'Closing';
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colorScheme === 'dark' ? '#1A3165' : Colors[colorScheme ?? 'light'].background }]}>
@@ -372,7 +373,7 @@ export default function StudentDetailScreen() {
                 </Text>
               </Text>
             </View>
-          ) : (
+          ) : isTermClosing ? (
             <>
               <View style={styles.warningBox}>
                 <IconSymbol name="exclamationmark.triangle" size={20} color="#F59E0B" />
@@ -413,6 +414,13 @@ export default function StudentDetailScreen() {
                 </TouchableOpacity>
               </View>
             </>
+          ) : (
+            <View style={styles.warningBox}>
+              <IconSymbol name="exclamationmark.triangle" size={20} color="#F59E0B" />
+              <Text style={[styles.warningText, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>
+                Evaluation is currently not allowed. It will be available once the current academic term is set to Closing.
+              </Text>
+            </View>
           )}
         </View>
       </ScrollView>

@@ -1,6 +1,7 @@
 import { apiService, Notification } from '@/services/api';
 import notificationService, { NotificationData } from '@/services/NotificationService';
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { AppState } from 'react-native';
 
 interface NotificationContextType {
   notifications: Notification[];
@@ -109,6 +110,43 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     return () => {
       notificationService.removeNotificationHandler(handleRealtimeNotification);
       notificationService.disconnect();
+    };
+  }, []);
+
+  // Auto-refresh when app becomes active + periodic fallback polling
+  useEffect(() => {
+    let pollInterval: ReturnType<typeof setInterval> | null = null;
+
+    const startPolling = () => {
+      if (pollInterval) return;
+      pollInterval = setInterval(() => {
+        refreshNotifications();
+      }, 15000);
+    };
+
+    const stopPolling = () => {
+      if (pollInterval) {
+        clearInterval(pollInterval);
+        pollInterval = null;
+      }
+    };
+
+    const handleAppStateChange = (state: string) => {
+      if (state === 'active') {
+        refreshNotifications();
+        startPolling();
+      } else {
+        stopPolling();
+      }
+    };
+
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    // Start immediately if app is active
+    handleAppStateChange(AppState.currentState);
+
+    return () => {
+      subscription.remove();
+      stopPolling();
     };
   }, []);
 

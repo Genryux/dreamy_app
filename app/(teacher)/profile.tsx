@@ -260,9 +260,9 @@ export default function TeacherProfileScreen() {
                 </Text>
                 <TextInput
                   style={[styles.textInput, {
-                    backgroundColor: colorScheme === 'dark' ? '#1A1A2E' : '#F8F8F8',
+                    backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : '#F8F8F8',
                     color: Colors[colorScheme ?? 'light'].textPrimary,
-                    borderColor: colorScheme === 'dark' ? '#3D3D5C' : Colors[colorScheme ?? 'light'].cardBorder,
+                    borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[colorScheme ?? 'light'].cardBorder,
                   }]}
                   value={editedFirstName}
                   onChangeText={setEditedFirstName}
@@ -594,7 +594,7 @@ function ChangePasswordModal({ visible, onClose, pinEnabled, colorScheme }: {
   return (
     <View style={styles.modalOverlay}>
       <View style={[styles.modalContent, {
-        backgroundColor: colorScheme === 'dark' ? '#252540' : Colors[scheme].cardBackground,
+        backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[scheme].cardBackground,
       }]}>
         <View style={styles.modalHeader}>
           <Text style={[styles.modalTitle, { color: Colors[scheme].textPrimary }]}>Change Password</Text>
@@ -672,9 +672,9 @@ function ChangePasswordModal({ visible, onClose, pinEnabled, colorScheme }: {
               <Text style={[styles.inputLabel, { color: Colors[scheme].textSecondary }]}>PIN (for verification)</Text>
               <TextInput
                 style={[styles.textInput, {
-                  backgroundColor: colorScheme === 'dark' ? '#1A1A2E' : '#F8F8F8',
+                  backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : '#F8F8F8',
                   color: Colors[scheme].textPrimary,
-                  borderColor: colorScheme === 'dark' ? '#3D3D5C' : Colors[scheme].cardBorder,
+                  borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[scheme].cardBorder,
                 }]}
                 value={pin}
                 onChangeText={setPin}
@@ -690,7 +690,7 @@ function ChangePasswordModal({ visible, onClose, pinEnabled, colorScheme }: {
 
         <View style={styles.modalFooter}>
           <TouchableOpacity
-            style={[styles.modalButton, styles.modalButtonSecondary, { borderColor: colorScheme === 'dark' ? '#3D3D5C' : Colors[scheme].cardBorder }]}
+            style={[styles.modalButton, styles.modalButtonSecondary, { borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[scheme].cardBorder }]}
             onPress={onClose}
           >
             <Text style={[styles.modalButtonText, { color: Colors[scheme].textSecondary }]}>Cancel</Text>
@@ -831,7 +831,7 @@ function PinSecurityModal({ visible, onClose, pinEnabled, onPinToggled, colorSch
   return (
     <View style={styles.modalOverlay}>
       <View style={[styles.modalContent, {
-        backgroundColor: colorScheme === 'dark' ? '#252540' : Colors[scheme].cardBackground,
+        backgroundColor: colorScheme === 'dark' ? '#2A3F6B' : Colors[scheme].cardBackground,
       }]}>
         <View style={styles.modalHeader}>
           <Text style={[styles.modalTitle, { color: Colors[scheme].textPrimary }]}>PIN Security</Text>
@@ -913,9 +913,9 @@ function PinSecurityModal({ visible, onClose, pinEnabled, onPinToggled, colorSch
                 <Text style={[styles.inputLabel, { color: Colors[scheme].textSecondary }]}>Current PIN</Text>
                 <TextInput
                   style={[styles.textInput, {
-                    backgroundColor: colorScheme === 'dark' ? '#1A1A2E' : '#F8F8F8',
+                    backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : '#F8F8F8',
                     color: Colors[scheme].textPrimary,
-                    borderColor: colorScheme === 'dark' ? '#3D3D5C' : Colors[scheme].cardBorder,
+                    borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[scheme].cardBorder,
                   }]}
                   value={currentPin}
                   onChangeText={setCurrentPin}
@@ -972,9 +972,9 @@ function PinSecurityModal({ visible, onClose, pinEnabled, onPinToggled, colorSch
                 <Text style={[styles.inputLabel, { color: Colors[scheme].textSecondary }]}>Current PIN</Text>
                 <TextInput
                   style={[styles.textInput, {
-                    backgroundColor: colorScheme === 'dark' ? '#1A1A2E' : '#F8F8F8',
+                    backgroundColor: colorScheme === 'dark' ? '#3A4F7B' : '#F8F8F8',
                     color: Colors[scheme].textPrimary,
-                    borderColor: colorScheme === 'dark' ? '#3D3D5C' : Colors[scheme].cardBorder,
+                    borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[scheme].cardBorder,
                   }]}
                   value={currentPin}
                   onChangeText={setCurrentPin}
@@ -991,7 +991,7 @@ function PinSecurityModal({ visible, onClose, pinEnabled, onPinToggled, colorSch
 
         <View style={styles.modalFooter}>
           <TouchableOpacity
-            style={[styles.modalButton, styles.modalButtonSecondary, { borderColor: colorScheme === 'dark' ? '#3D3D5C' : Colors[scheme].cardBorder }]}
+            style={[styles.modalButton, styles.modalButtonSecondary, { borderColor: colorScheme === 'dark' ? '#3A4F7B' : Colors[scheme].cardBorder }]}
             onPress={onClose}
           >
             <Text style={[styles.modalButtonText, { color: Colors[scheme].textSecondary }]}>Cancel</Text>

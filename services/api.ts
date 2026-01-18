@@ -135,6 +135,11 @@ class ApiService {
     return await SecureStore.getItemAsync('authToken');
   }
 
+  private async getNotificationBasePath(): Promise<string> {
+    const userType = await SecureStore.getItemAsync('userType');
+    return userType === 'teacher' ? '/teacher/notifications' : '/notifications';
+  }
+
   private async makeRequest(endpoint: string, options: RequestInit = {}): Promise<any> {
     const token = await this.getAuthToken();
     
@@ -388,26 +393,30 @@ class ApiService {
 
   // Notification methods
   async getNotifications(page: number = 1): Promise<NotificationResponse> {
-    const data = await this.makeRequest(`/notifications?page=${page}`);
+    const basePath = await this.getNotificationBasePath();
+    const data = await this.makeRequest(`${basePath}?page=${page}`);
     return data.data;
   }
 
   async markNotificationAsRead(id: string): Promise<{ success: boolean; unread_count: number }> {
-    const data = await this.makeRequest(`/notifications/${id}/read`, {
+    const basePath = await this.getNotificationBasePath();
+    const data = await this.makeRequest(`${basePath}/${id}/read`, {
       method: 'POST',
     });
     return data;
   }
 
   async markAllNotificationsAsRead(): Promise<{ success: boolean; unread_count: number }> {
-    const data = await this.makeRequest('/notifications/mark-all-read', {
+    const basePath = await this.getNotificationBasePath();
+    const data = await this.makeRequest(`${basePath}/mark-all-read`, {
       method: 'POST',
     });
     return data;
   }
 
   async getUnreadNotificationCount(): Promise<{ unread_count: number }> {
-    const data = await this.makeRequest('/notifications/unread-count');
+    const basePath = await this.getNotificationBasePath();
+    const data = await this.makeRequest(`${basePath}/unread-count`);
     return data.data;
   }
 

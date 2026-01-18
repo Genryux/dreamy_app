@@ -93,7 +93,9 @@ export default function StudentHistoryDetailScreen() {
     </View>
   );
 
-  const showRemedialActions = data?.evaluation_status?.toLowerCase() === 'failed' && !data?.is_remedial_status_finalized;
+  const isTermClosing = data?.current_term?.status === 'Closing';
+  const showRemedialActions = data?.evaluation_status?.toLowerCase() === 'failed' && !data?.is_remedial_status_finalized && isTermClosing;
+  const remedialLockedByTerm = data?.evaluation_status?.toLowerCase() === 'failed' && !data?.is_remedial_status_finalized && !isTermClosing;
 
   if (loading && !data) {
     return (
@@ -206,6 +208,16 @@ export default function StudentHistoryDetailScreen() {
                 <Text style={[styles.updatingText, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>Saving...</Text>
               </View>
             )}
+          </View>
+        ) : remedialLockedByTerm ? (
+          <View style={[styles.actionCard, {
+            backgroundColor: colorScheme === 'dark' ? '#1F2D4D' : '#E5F2FA',
+            borderColor: colorScheme === 'dark' ? '#3A4F7B' : '#B6D9F2',
+          }]}> 
+            <Text style={[styles.actionTitle, { color: Colors[colorScheme ?? 'light'].textPrimary }]}>Remedial update restricted</Text>
+            <Text style={[styles.actionSubtitle, { color: Colors[colorScheme ?? 'light'].textSecondary }]}>
+              Remedial updates are only available when the current academic term is set to Closing.
+            </Text>
           </View>
         ) : data?.evaluation_status?.toLowerCase() === 'failed' ? (
           <View style={[styles.actionCard, {
